@@ -26,3 +26,5 @@ plt.fill(x, y, color='lightblue')  # Creates a filled triangle
 plt.axis('off')  # Removes axes
 plt.show()
 
+#test
+

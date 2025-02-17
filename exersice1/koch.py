@@ -2,11 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Define three endpoints
-x1, y1 = -5, 0  # First point
-x2, y2 = 0, 0  # Second point
-x3, y3 = 5, 5  # Second point
-x4, y4 = 10, 0  # Third point
-x5, y5 = 15, 0  # Fourth point
+x1, y1 = -10, 0  # First point
+x2, y2 = -5, 0  # Second point
+x3, y3 = 0, 10 * np.sqrt(3) / 2  # Second point
+x4, y4 = 5, 0  # Third point
+x5, y5 = 10, 0  # Fourth point
 
 # Generate points between the endpoints for first line
 num_points = 100  # Number of points to create smooth lines

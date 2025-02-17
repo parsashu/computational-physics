@@ -14,8 +14,40 @@ t = np.linspace(0, 1, num_points)[:, np.newaxis]
 line1 = start_point + (end_point - start_point) * t
 
 
-def find_on_line_dots(start_point, end_point):
-    pass
+def find_devider_points(start_point, end_point):
+    direction = end_point - start_point
+    line_length = np.linalg.norm(end_point - start_point)
+    unit_vector = direction / line_length
+    
+    point1 = start_point + (line_length / 3) * unit_vector
+    point2 = start_point + (2 * line_length / 3) * unit_vector
+    return point1, point2
+
+point1, point2 = find_devider_points(start_point, end_point)
+
+
+def find_middle_point(start_point, end_point):
+    direction = end_point - start_point
+    line_length = np.linalg.norm(end_point - start_point)
+    unit_vector = direction / line_length
+    return start_point + (line_length / 2) * unit_vector
+
+middle_point = find_middle_point(start_point, end_point)
+
+
+def find_top_point(start_point, end_point):
+    direction = start_point - end_point
+    line_length = np.linalg.norm(start_point - end_point)
+    
+    unit_vector = direction / line_length
+    perpendicular = np.array([unit_vector[1], -unit_vector[0]])
+    
+    middle_point = find_middle_point(start_point, end_point)
+    triangle_height = line_length * np.sqrt(3) / 6
+    return middle_point + triangle_height * perpendicular
+
+top_point = find_top_point(start_point, end_point)
+
 
 
 # Create the plot
@@ -28,7 +60,9 @@ plt.plot(line1[:, 0], line1[:, 1], "b-")  # Plot x and y coordinates separately
 plt.plot(
     [start_point[0], end_point[0]], [start_point[1], end_point[1]], "ro"
 )  # Show endpoints as red dots
-
+plt.plot([point1[0], point2[0]], [point1[1], point2[1]], "ro") 
+plt.plot([middle_point[0]], [middle_point[1]], "ro") 
+plt.plot([top_point[0]], [top_point[1]], "ro") 
 
 plt.axis("equal")
 plt.grid(True)

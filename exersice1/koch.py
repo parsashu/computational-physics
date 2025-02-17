@@ -44,34 +44,44 @@ def find_top_point(start_point, end_point):
 top_point = find_top_point(start_point, end_point)
 
 
-# Generate points between the endpoints for first line
-num_points = 100  # Number of points to create smooth lines
-t = np.linspace(0, 1, num_points)[:, np.newaxis]
+def line_between_points(start_point, end_point):
+    num_points = 100  # Number of points to create smooth lines
+    t = np.linspace(0, 1, num_points)[:, np.newaxis]
+    return start_point + (end_point - start_point) * t
 
-# Parametric equations for first line
-line1 = start_point + (point1 - start_point) * t
-line2 = point1 + (top_point - point1) * t
-line3 = top_point + (point2 - top_point) * t
-line4 = point2 + (end_point - point2) * t
 
+line1 = line_between_points(start_point, point1)
+line2 = line_between_points(point1, top_point)
+line3 = line_between_points(top_point, point2)
+line4 = line_between_points(point2, end_point)
 
 
 # Create the plot
 plt.figure(figsize=(8, 4))
 
-# Plot both lines
-plt.plot(line1[:, 0], line1[:, 1], "b-")  # Plot x and y coordinates separately
-plt.plot(line2[:, 0], line2[:, 1], "b-")
-plt.plot(line3[:, 0], line3[:, 1], "b-")
-plt.plot(line4[:, 0], line4[:, 1], "b-")
 
-# Plot endpoints
-plt.plot(
-    [start_point[0], end_point[0]], [start_point[1], end_point[1]], "ro"
-)  # Show endpoints as red dots
-plt.plot([point1[0], point2[0]], [point1[1], point2[1]], "ro")
-# plt.plot([middle_point[0]], [middle_point[1]], "ro")
-plt.plot([top_point[0]], [top_point[1]], "ro")
+# Plot lines
+def plot_line(line):
+    plt.plot(line[:, 0], line[:, 1], "b-")
+
+
+plot_line(line1)
+plot_line(line2)
+plot_line(line3)
+plot_line(line4)
+
+
+# Plot points
+def plot_point(point):
+    plt.plot(point[0], point[1], "ro")
+
+
+plot_point(start_point)
+plot_point(end_point)
+plot_point(point1)
+plot_point(point2)
+plot_point(top_point)
+
 
 plt.axis("equal")
 plt.grid(True)

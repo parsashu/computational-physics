@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 start_point = np.array([-0.5, 0])
 end_point = np.array([0.5, 0])
 all_points = [start_point, end_point]
+temp_points = all_points.copy()
 all_lines = []
 
 
@@ -46,11 +47,23 @@ def find_new_points(start_point, end_point):
 
 def add_new_points(start_point, end_point):
     point1, point2, top_point = find_new_points(start_point, end_point)
-    all_points.pop()
-    all_points.append(point1)
-    all_points.append(top_point)
-    all_points.append(point2)
-    all_points.append(end_point)
+
+    # Find the index of end_point
+    for i, point in enumerate(temp_points):
+        if np.array_equal(point, end_point):
+            # Insert new points at position i
+            temp_points.insert(i, point1)
+            temp_points.insert(i + 1, top_point)
+            temp_points.insert(i + 2, point2)
+            break
+
+
+def update_all_points(i):
+    global all_points
+    for i in range(i):
+        add_new_points(all_points[i], all_points[i + 1])
+
+    all_points = temp_points
 
 
 # Line functions
@@ -82,7 +95,10 @@ def plot_points():
         plt.plot(point[0], point[1], "ro")
 
 
-add_new_points(start_point, end_point)
+# add_new_points(start_point, end_point)
+# add_new_points(all_points[0], all_points[1])
+update_all_points(1)
+update_all_points(2)
 add_new_lines()
 plot_points()
 plot_lines()

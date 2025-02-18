@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Define three endpoints
+iterations = 5
 start_point = np.array([-0.5, 0])
 end_point = np.array([0.5, 0])
 all_points = [start_point, end_point]
@@ -96,15 +96,21 @@ def plot_points():
         plt.plot(point[0], point[1], "ro")
 
 
-# add_new_points(start_point, end_point)
-update_all_points()
-update_all_points()
-update_all_points()
-add_new_lines()
-plot_points()
-plot_lines()
+def koch(iterations, points=False, lines=True):
+    for i in range(iterations):
+        update_all_points()        
+    add_new_lines()
+    
+    if points:
+        plot_points()
+    if lines:
+        plot_lines()
+
+
+koch(iterations)
+
 
 
 plt.axis("equal")
-plt.grid(True)
+plt.axis("off")
 plt.show()

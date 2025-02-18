@@ -46,6 +46,7 @@ def find_new_points(start_point, end_point):
 
 
 def add_new_points(start_point, end_point):
+    global temp_points
     point1, point2, top_point = find_new_points(start_point, end_point)
 
     # Find the index of end_point
@@ -58,12 +59,12 @@ def add_new_points(start_point, end_point):
             break
 
 
-def update_all_points(i):
+def update_all_points():
     global all_points
-    for i in range(i):
+    for i in range(len(all_points) - 1):
         add_new_points(all_points[i], all_points[i + 1])
 
-    all_points = temp_points
+    all_points = temp_points.copy()
 
 
 # Line functions
@@ -96,9 +97,9 @@ def plot_points():
 
 
 # add_new_points(start_point, end_point)
-# add_new_points(all_points[0], all_points[1])
-update_all_points(1)
-update_all_points(2)
+update_all_points()
+update_all_points()
+update_all_points()
 add_new_lines()
 plot_points()
 plot_lines()

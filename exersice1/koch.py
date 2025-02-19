@@ -109,8 +109,10 @@ def koch(iterations, points=False, lines=True):
 
 koch(iterations)
 
+#test
+
 
 
 plt.axis("equal")
 plt.axis("off")
-plt.show()
+

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-iterations = 1
+iterations = 16
 initial_points = np.array(
     [
         [0.0, 0.0],

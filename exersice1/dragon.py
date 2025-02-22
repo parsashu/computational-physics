@@ -11,28 +11,35 @@ def rotate_point(point, angle_degrees):
     return np.dot(rotation_matrix, point)
 
 
+def scale_shape(points, scale_factor, center_point=None):
+    """Scale points around a center point"""
+
+    # If no center point given, use center of points
+    if center_point is None:
+        center_point = np.mean(points, axis=0)
+
+    # Translate to origin
+    translated = points - center_point
+
+    # Create scaling matrix
+    scaling_matrix = np.array([[scale_factor, 0], [0, scale_factor]])
+
+    # Scale points
+    scaled = np.dot(translated, scaling_matrix)
+
+    # Translate back
+    return scaled + center_point
+
+
 def dragon_curve(iterations):
     # Start with a single segment
-    points = [np.array([0.0, 0.0]), np.array([1.0, 0.0])]
-
-    for _ in range(iterations):
-        new_points = []
-        for i in range(len(points) - 1):
-            start = points[i]
-            end = points[i + 1]
-
-            # Midpoint
-            mid = (start + end) / 2
-
-            # Vector from start to end
-            vector = end - start
-
-            # Rotate the second half 90 degrees clockwise around midpoint
-            rotated = rotate_point(vector / 2, -90)
-
-            new_points.extend([start, mid + rotated])
-        new_points.append(points[-1])
-        points = new_points
+    points = np.array(
+        [
+            [0.0, 0.0],
+            [0.5, 0.5],
+            [1.0, 0.0],
+        ]
+    )
 
     return np.array(points)
 
@@ -42,10 +49,11 @@ plt.figure(figsize=(8, 4), facecolor="white")
 
 # Plot one iteration
 points = dragon_curve(1)
-plt.plot(points[:, 0], points[:, 1], "b-")  # Blue line
-plt.plot(points[:, 0], points[:, 1], "ro")  # Red points
+scaled = scale_shape(points, 0.5, [0.0, 0.0])
+plt.plot(scaled[:, 0], scaled[:, 1], "b-")  # Blue line
+plt.plot(scaled[:, 0], scaled[:, 1], "ro")  # Red points
 
 plt.axis("equal")
-plt.axis("off")
+plt.axis("on")
 
 plt.show()

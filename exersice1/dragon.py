@@ -1,6 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+iterations = 15
+initial_points = np.array(
+    [
+        [0.0, 0.0],
+        [0.5, 0.5],
+        [1.0, 0.0],
+    ]
+)
+
 
 def scale_shape(points, scale_factor, center_point=None):
     """Scale points around a center point"""
@@ -48,24 +57,22 @@ def rotate_shape(points, angle_degrees, center_point=None):
 
 
 def dragon_curve(iterations):
-    initial_points = np.array(
-        [
-            [0.0, 0.0],
-            [0.5, 0.5],
-            [1.0, 0.0],
-        ]
-    )
-    # Rotate and scale initial points (+45 degrees)
-    rotated_points1 = rotate_shape(initial_points, 45, [0.0, 0.0])
-    scaled_points1 = scale_shape(rotated_points1, 0.5, [0.0, 0.0])
-    
-    # Rotate and scale initial points (-45 degrees)
-    rotated_points2 = rotate_shape(initial_points, 135, [0.0, 0.0])
-    scaled_points2 = scale_shape(rotated_points2, 0.5, [0.0, 0.0])
-    
-    # Store initial blue points
-    blue_points = scaled_points1.copy()
-    red_points = scaled_points2.copy()
+    points = initial_points.copy()
+
+    for _ in range(iterations + 1):
+        last_point = points[-1]
+
+        # Rotate and scale initial points (45 degrees)
+        rotated_points1 = rotate_shape(points, 45, last_point)
+        blue_points = scale_shape(rotated_points1, 0.5, last_point)
+
+        # Rotate and scale initial points (135 degrees)
+        rotated_points2 = rotate_shape(points, 135, last_point)
+        red_points = scale_shape(rotated_points2, 0.5, last_point)
+
+        # Store initial blue points
+        reversed_red_points = red_points[::-1]
+        points = np.vstack((blue_points, reversed_red_points))
 
     return np.array(blue_points), np.array(red_points)
 
@@ -74,12 +81,13 @@ def dragon_curve(iterations):
 plt.figure(figsize=(8, 4), facecolor="white")
 
 # Plot one iteration
-blue_points, red_points = dragon_curve(1)
+blue_points, red_points = dragon_curve(iterations)
+
 
 plt.plot(blue_points[:, 0], blue_points[:, 1], "b-")  # Blue line
 plt.plot(red_points[:, 0], red_points[:, 1], "r-")  # Red line
 
 plt.axis("equal")
-plt.axis("on")
+plt.axis("off")
 
 plt.show()

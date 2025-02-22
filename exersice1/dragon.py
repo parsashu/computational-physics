@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-iterations = 15
+iterations = 1
 initial_points = np.array(
     [
         [0.0, 0.0],
@@ -58,8 +58,10 @@ def rotate_shape(points, angle_degrees, center_point=None):
 
 def dragon_curve(iterations):
     points = initial_points.copy()
+    blue_points = points.copy()[:2]
+    red_points = points.copy()[1:]
 
-    for _ in range(iterations + 1):
+    for _ in range(iterations - 1):
         last_point = points[-1]
 
         # Rotate and scale initial points (45 degrees)
@@ -74,7 +76,7 @@ def dragon_curve(iterations):
         reversed_red_points = red_points[::-1]
         points = np.vstack((blue_points, reversed_red_points))
 
-    return np.array(blue_points), np.array(red_points)
+    return blue_points, red_points
 
 
 # Create figure with white background

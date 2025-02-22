@@ -97,10 +97,10 @@ def plot_points():
 
 
 def koch(iterations, points=False, lines=True):
-    for i in range(iterations):
-        update_all_points()
+    for _ in range(iterations):
+        update_all_points()        
     add_new_lines()
-
+    
     if points:
         plot_points()
     if lines:
@@ -110,5 +110,7 @@ def koch(iterations, points=False, lines=True):
 koch(iterations)
 
 
+
 plt.axis("equal")
 plt.axis("off")
+plt.show()

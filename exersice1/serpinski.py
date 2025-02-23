@@ -61,9 +61,10 @@ for i in range(len(all_points) // 3):
     plt.fill(triangle[:, 0], triangle[:, 1], alpha=0.3, color="blue", label="Top")
 
 
-
+    
+plt.title(f"Sierpinski Triangle - Iteration {iterations}")
 plt.axis("equal")
-plt.axis("on")
+plt.axis("off")
 plt.grid(False)
 
 plt.show()

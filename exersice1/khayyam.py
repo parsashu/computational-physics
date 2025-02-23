@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+# Specify the number of rows for Khayyam's triangle
+n = 4
+
+
 def generate_khayyam_triangle(n):
     triangle = []
     for i in range(n):
@@ -14,8 +18,28 @@ def generate_khayyam_triangle(n):
     return triangle
 
 
-# Specify the number of rows for Khayyam's triangle
-n = 10
+def generate_point(triangle):
+    # Get the dimensions of the triangle
+    height = len(triangle)
+    width = 2 * height - 1  # Width needed for centered triangle
+    
+    # Create a matrix to store the colors (1 for odd, 0 for even)
+    colors = np.zeros((height, width))
+    
+    # Fill the matrix with 1s (odd) and 0s (even) in a triangular pattern
+    for i in range(height):
+        # Calculate starting position for this row to center it
+        start_pos = (width - (2 * i + 1)) // 2
+        for j in range(len(triangle[i])):
+            colors[i][start_pos + 2*j] = triangle[i][j] % 2
+    
+    # Create the plot
+    plt.figure(figsize=(10, 8))
+    plt.imshow(colors, cmap='RdYlGn')  # Red for even (0), Green for odd (1)
+    plt.title("Khayyam's Triangle (Green: Odd, Red: Even)")
+    plt.axis('equal')
+    plt.show()
+
 
 # Generate Khayyam's triangle
 triangle = generate_khayyam_triangle(n)
@@ -26,22 +50,4 @@ for i, row in enumerate(triangle):
     print(" " * (n - i), " ".join(map(str, row)))
 
 
-def generate_point(triangle):
-    # Get the dimensions of the triangle
-    height = len(triangle)
-    width = len(triangle[-1])
-
-    # Create a matrix to store the colors (1 for odd, 0 for even)
-    colors = np.zeros((height, width))
-
-    # Fill the matrix with 1s (odd) and 0s (even)
-    for i in range(height):
-        for j in range(len(triangle[i])):
-            colors[i][j] = triangle[i][j] % 2
-
-    # Create the plot
-    plt.figure(figsize=(10, 8))
-    plt.imshow(colors, cmap="RdYlGn")  # Red for even (0), Green for odd (1)
-    plt.title("Khayyam's Triangle (Green: Odd, Red: Even)")
-    plt.axis("equal")
-    plt.show()
+generate_point(triangle)

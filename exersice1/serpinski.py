@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-iterations = 2
+iterations = 1
 
 # Create triangle points
 initial_points = np.array(
@@ -37,41 +37,36 @@ def scale_shape(points, scale_factor, center_point=None):
 
 def serpinski(all_points, iterations):
     global initial_points
-    
+
     for _ in range(iterations):
         left_points = scale_shape(all_points.copy(), 0.5, initial_points[0])
         top_points = scale_shape(all_points.copy(), 0.5, initial_points[1])
         right_points = scale_shape(all_points.copy(), 0.5, initial_points[2])
         all_points = np.vstack([left_points, right_points, top_points])
-        
-    return left_points, top_points, right_points
+        # unique_points = np.unique(all_points, axis=0)
+
+    return left_points, top_points, right_points, all_points
 
 
-left_points, top_points, right_points = serpinski(all_points, iterations)
-
-
+left_points, top_points, right_points, all_points = serpinski(all_points, iterations)
 
 
 # Create figure with white background
-plt.figure(figsize=(8, 8), facecolor="white")
+plt.figure(figsize=(8, 6), facecolor="white")
 
-# Plot and fill each triangle separately
-plt.fill(left_points[:, 0], left_points[:, 1], alpha=0.3, color='blue', label='Left')
-plt.fill(right_points[:, 0], right_points[:, 1], alpha=0.3, color='red', label='Right')
-plt.fill(top_points[:, 0], top_points[:, 1], alpha=0.3, color='green', label='Top')
+for i in range(len(all_points) // 3):
+    triangle = all_points[3 * i : 3 * i + 3]
+    plt.fill(triangle[:, 0], triangle[:, 1], alpha=0.3, color="blue", label="Top")
 
-# Plot points for each triangle
-plt.scatter(left_points[:, 0], left_points[:, 1], c='blue', marker='o', s=100)
-plt.scatter(right_points[:, 0], right_points[:, 1], c='red', marker='o', s=100)
-plt.scatter(top_points[:, 0], top_points[:, 1], c='green', marker='o', s=100)
+plt.scatter(all_points[:, 0], all_points[:, 1], c="blue", marker="o", s=100)
 
-# Add point numbers for each set
-for i, (x, y) in enumerate(left_points):
-    plt.annotate(f'L{i}', (x, y), xytext=(5, 5), textcoords='offset points')
-for i, (x, y) in enumerate(right_points):
-    plt.annotate(f'R{i}', (x, y), xytext=(5, 5), textcoords='offset points')
-for i, (x, y) in enumerate(top_points):
-    plt.annotate(f'T{i}', (x, y), xytext=(5, 5), textcoords='offset points')
+
+# Plot all points in black with numbers
+plt.scatter(all_points[:, 0], all_points[:, 1], c="blue", marker="o", s=100)
+
+# Add point numbers for all points
+for i, (x, y) in enumerate(all_points):
+    plt.annotate(f"{i}", (x, y), xytext=(5, 5), textcoords="offset points")
 
 
 plt.axis("equal")

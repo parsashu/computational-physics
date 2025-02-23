@@ -1,16 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-iterations = 1
+iterations = 2
 
 # Create triangle points
-all_points = np.array(
+initial_points = np.array(
     [
         [0.0, 0.0],  # bottom left
         [0.5, 0.866],  # top point (using sin(60°) = 0.866)
         [1.0, 0.0],  # bottom right
     ]
 )
+
+all_points = initial_points.copy()
 
 
 def scale_shape(points, scale_factor, center_point=None):
@@ -33,18 +35,22 @@ def scale_shape(points, scale_factor, center_point=None):
     return scaled + center_point
 
 
-def serpinski(iterations):
-    global all_points
+def serpinski(all_points, iterations):
+    global initial_points
     
-    left_points = scale_shape(all_points.copy(), 0.5, all_points[0])
-    top_points = scale_shape(all_points.copy(), 0.5, all_points[1])
-    right_points = scale_shape(all_points.copy(), 0.5, all_points[2])
-
-    all_points = np.vstack([left_points, right_points, top_points])
+    for _ in range(iterations):
+        left_points = scale_shape(all_points.copy(), 0.5, initial_points[0])
+        top_points = scale_shape(all_points.copy(), 0.5, initial_points[1])
+        right_points = scale_shape(all_points.copy(), 0.5, initial_points[2])
+        all_points = np.vstack([left_points, right_points, top_points])
+        
     return left_points, top_points, right_points
 
 
-left_points, top_points, right_points = serpinski(iterations)
+left_points, top_points, right_points = serpinski(all_points, iterations)
+
+
+
 
 # Create figure with white background
 plt.figure(figsize=(8, 8), facecolor="white")

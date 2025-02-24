@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 
 n_points = 10000  # Number of points
 p = 20
-right_angle = -45
-left_angle = 45
-top_angle = -10
+right_angle = -50
+left_angle = 50
+top_angle = -3
 
 # Create square points
 vertices = np.array(
@@ -15,6 +15,7 @@ vertices = np.array(
         [0.0, 4.0],
         [2.0, 4.0],
         [2.0, 0.0],
+        [0.0, 0.0],
     ]
 )
 
@@ -24,26 +25,6 @@ C = vertices[2]
 D = vertices[3]
 
 all_points = vertices.copy()
-
-
-def scale_shape(points, scale_factor, center_point=None):
-    """Scale points around a center point"""
-
-    # If no center point given, use center of points
-    if center_point is None:
-        center_point = np.mean(points, axis=0)
-
-    # Translate to origin
-    translated = points - center_point
-
-    # Create scaling matrix
-    scaling_matrix = np.array([[scale_factor, 0], [0, scale_factor]])
-
-    # Scale points
-    scaled = np.dot(translated, scaling_matrix)
-
-    # Translate back
-    return scaled + center_point
 
 
 def rotate_shape(points, angle_degrees, center_point=None):
@@ -58,7 +39,10 @@ def rotate_shape(points, angle_degrees, center_point=None):
 
     # Create rotation matrix
     rotation_matrix = np.array(
-        [[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]]
+        [
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)],
+        ]
     )
 
     # Translate to origin
@@ -71,6 +55,44 @@ def rotate_shape(points, angle_degrees, center_point=None):
     return rotated + center_point
 
 
+def scale_shape(points, scale_width, scale_length=None, center_point=None):
+    """Scale square's width and length independently, considering its orientation"""
+    if scale_length is None:
+        scale_length = scale_width
+
+    # If no center point given, use center of points
+    if center_point is None:
+        center_point = np.mean(points, axis=0)
+
+    # Calculate the orientation of the square
+    # Vector from bottom to top of square (length direction)
+    length_vector = points[1] - points[0]
+    angle = np.arctan2(length_vector[1], length_vector[0])
+
+    # Translate to origin
+    translated = points - center_point
+
+    # Rotate to align with axes
+    rotation_matrix = np.array(
+        [[np.cos(-angle), -np.sin(-angle)], [np.sin(-angle), np.cos(-angle)]]
+    )
+    aligned = np.dot(translated, rotation_matrix.T)
+
+    # Scale
+    scaling_matrix = np.array([[scale_width, 0], [0, scale_length]])
+    scaled = np.dot(aligned, scaling_matrix)
+
+    # Rotate back
+    rotation_matrix = np.array(
+        [[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]]
+    )
+    rotated = np.dot(scaled, rotation_matrix.T)
+
+    # Translate back
+    points[:] = rotated + center_point
+    return points
+
+
 def random_point_generator():
     # Generate random x and y coordinates within the square bounds
     x = np.random.uniform(0, 2.0)  # Random x between 0 and 2
@@ -80,41 +102,52 @@ def random_point_generator():
 
 # Main functions
 def right_func(points):
-    rotate_shape(points, right_angle)
-    scale_shape(points, 0.333)
+    points_copy = points.copy()
+    rotated = rotate_shape(points_copy, right_angle)
+    scaled = scale_shape(rotated, 0.35, 0.28, [1.66, 0.39])
+    return scaled
 
 
 def left_func(points):
-    rotate_shape(points, left_angle)
-    scale_shape(points, 0.25)
+    points_copy = points.copy()
+    rotated = rotate_shape(points_copy, left_angle)
+    scaled = scale_shape(rotated, 0.34, 0.30, [0.45, 0.85])
+    return scaled
+
 
 def top_func(points):
-    rotate_shape(points, top_angle, 0.9)
+    points_copy = points.copy()
+    rotated = rotate_shape(points_copy, top_angle)
+    scaled = scale_shape(rotated, 0.82, 0.82, [1.4, 4.3])
+    return scaled
 
 
 def tail_func(points):
-    rotate_shape(points, top_angle)
+    points_copy = points.copy()
+    rotated = rotate_shape(points_copy, top_angle)
+    scaled = scale_shape(rotated, 0.19, 0.01, [1, 0])
+    return scaled
 
 
-new_points = rotate_shape(vertices, 0, A)
 point = random_point_generator()
+
+right = right_func(vertices)
+left = left_func(vertices)
+top = top_func(vertices)
+tail = tail_func(vertices)
 
 # Plot the square
 plt.figure(figsize=(8, 6))
-# Add the first point to the end to close the shape
-vertices_closed = np.vstack([new_points, new_points[0]])
-plt.plot(
-    vertices_closed[:, 0], vertices_closed[:, 1], "k-"
-)  # Draw lines connecting vertices
-plt.fill(
-    vertices_closed[:, 0], vertices_closed[:, 1], alpha=0.1
-)  # Fill with transparent color
 
-plt.scatter(point[0], point[1], s=1, color="red")
+plt.plot(vertices[:, 0], vertices[:, 1], "k-")  # Draw lines connecting vertices
+plt.plot(right[:, 0], right[:, 1], "b-")
+plt.plot(left[:, 0], left[:, 1], "r-")
+plt.plot(top[:, 0], top[:, 1], "lightblue")
+plt.plot(tail[:, 0], tail[:, 1], "y-")
+
 
 plt.grid(True)
 plt.axis("equal")  # Make sure the aspect ratio is equal
-plt.title("Square")
 plt.xlabel("X")
 plt.ylabel("Y")
 plt.show()

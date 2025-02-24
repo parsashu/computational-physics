@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# Number of points
-n = 100000
+n_points = 10000  # Number of points
+p = 20
 
 # Create triangle points
 vertices = np.array(
@@ -55,59 +55,34 @@ def random_point_generator():
     return point
 
 
-def serpinski_generator(iterations):
+def serpinski_generator(n_points, p):
     global all_points
-    
-    for _ in range(iterations):
+
+    for _ in range(n_points):
         point = random_point_generator()
-        
-        i = np.random.choice([0, 1, 2])
-        chosen_vertex = vertices[i]
-        
-        new_point = scale_shape(point, 0.5, chosen_vertex)
-        all_points = np.vstack((all_points, new_point))
+
+        for _ in range(p):
+            index = np.random.choice([0, 1, 2])
+            chosen_vertex = vertices[index]
+
+            new_point = scale_shape(point, 0.5, chosen_vertex)
+            point = new_point
+
+        all_points = np.vstack((all_points, point))
     return all_points
-    
-
-    
-    
 
 
-all_points = serpinski_generator(n)
+all_points = serpinski_generator(n_points, p)
 
 # Create the plot
 plt.figure(figsize=(8, 6))
 
-# Plot initial triangle points
-plt.scatter(
-    vertices[:, 0],
-    vertices[:, 1],
-    color="blue",
-    s=100,
-    label="Triangle vertices",
-)
 
-plt.scatter(all_points[:, 0], all_points[:, 1], color="red", s=1, label="Random point")
+plt.scatter(all_points[:, 0], all_points[:, 1], color="red", s=1)
 
-# Plot triangle edges
-plt.plot(
-    [vertices[0, 0], vertices[1, 0]],
-    [vertices[0, 1], vertices[1, 1]],
-    "b-",
-)
-plt.plot(
-    [vertices[1, 0], vertices[2, 0]],
-    [vertices[1, 1], vertices[2, 1]],
-    "b-",
-)
-plt.plot(
-    [vertices[2, 0], vertices[0, 0]],
-    [vertices[2, 1], vertices[0, 1]],
-    "b-",
-)
 
 plt.legend()
-plt.axis("equal")
+plt.axis("off")
 plt.grid(True)
-plt.title("Triangle with Random Point")
+plt.title(f"Serpinski Triangle (n_points={n_points}, p={p})")
 plt.show()

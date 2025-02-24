@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-np.random.seed(20)
 
-iterations = 7
+# Number of points
+n = 100000
 
 # Create triangle points
-initial_points = np.array(
+vertices = np.array(
     [
         [0.0, 0.0],  # bottom left
         [0.5, 0.866],  # top point (using sin(60°) = 0.866)
@@ -14,11 +14,11 @@ initial_points = np.array(
     ]
 )
 
-A = initial_points[0]
-B = initial_points[1]
-C = initial_points[2]
+A = vertices[0]
+B = vertices[1]
+C = vertices[2]
 
-all_points = initial_points.copy()
+all_points = vertices.copy()
 
 
 def scale_shape(points, scale_factor, center_point=None):
@@ -55,38 +55,54 @@ def random_point_generator():
     return point
 
 
-# Generate a random point
-point = random_point_generator()
+def serpinski_generator(iterations):
+    global all_points
+    
+    for _ in range(iterations):
+        point = random_point_generator()
+        
+        i = np.random.choice([0, 1, 2])
+        chosen_vertex = vertices[i]
+        
+        new_point = scale_shape(point, 0.5, chosen_vertex)
+        all_points = np.vstack((all_points, new_point))
+    return all_points
+    
+
+    
+    
+
+
+all_points = serpinski_generator(n)
 
 # Create the plot
 plt.figure(figsize=(8, 6))
 
 # Plot initial triangle points
 plt.scatter(
-    initial_points[:, 0],
-    initial_points[:, 1],
+    vertices[:, 0],
+    vertices[:, 1],
     color="blue",
     s=100,
     label="Triangle vertices",
 )
 
-# Plot random point
-plt.scatter(point[0], point[1], color="red", s=100, label="Random point")
+plt.scatter(all_points[:, 0], all_points[:, 1], color="red", s=1, label="Random point")
 
 # Plot triangle edges
 plt.plot(
-    [initial_points[0, 0], initial_points[1, 0]],
-    [initial_points[0, 1], initial_points[1, 1]],
+    [vertices[0, 0], vertices[1, 0]],
+    [vertices[0, 1], vertices[1, 1]],
     "b-",
 )
 plt.plot(
-    [initial_points[1, 0], initial_points[2, 0]],
-    [initial_points[1, 1], initial_points[2, 1]],
+    [vertices[1, 0], vertices[2, 0]],
+    [vertices[1, 1], vertices[2, 1]],
     "b-",
 )
 plt.plot(
-    [initial_points[2, 0], initial_points[0, 0]],
-    [initial_points[2, 1], initial_points[0, 1]],
+    [vertices[2, 0], vertices[0, 0]],
+    [vertices[2, 1], vertices[0, 1]],
     "b-",
 )
 

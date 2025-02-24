@@ -78,6 +78,24 @@ def random_point_generator():
     return np.array([x, y])
 
 
+# Main functions
+def right_func(points):
+    rotate_shape(points, right_angle)
+    scale_shape(points, 0.333)
+
+
+def left_func(points):
+    rotate_shape(points, left_angle)
+    scale_shape(points, 0.25)
+
+def top_func(points):
+    rotate_shape(points, top_angle, 0.9)
+
+
+def tail_func(points):
+    rotate_shape(points, top_angle)
+
+
 new_points = rotate_shape(vertices, 0, A)
 point = random_point_generator()
 

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-n_points = 10000  # Number of points
+n_points = 1000  # Number of points
 p = 20
 right_angle = -50
 left_angle = 50
@@ -129,12 +129,27 @@ def tail_func(points):
     return scaled
 
 
-point = random_point_generator()
+def sarakhs(n_points, p):
+    global all_points
+
+    for _ in range(n_points):
+        point = random_point_generator()
+
+        for _ in range(p):
+            random_func = np.random.choice([right_func, left_func, top_func, tail_func])
+            new_point = random_func(point)
+            point = new_point
+
+        all_points = np.vstack((all_points, point))
+    return all_points
+
 
 right = right_func(vertices)
 left = left_func(vertices)
 top = top_func(vertices)
 tail = tail_func(vertices)
+
+# all_points = sarakhs(n_points, p)
 
 # Plot the square
 plt.figure(figsize=(8, 6))
@@ -145,6 +160,8 @@ plt.plot(left[:, 0], left[:, 1], "r-")
 plt.plot(top[:, 0], top[:, 1], "lightblue")
 plt.plot(tail[:, 0], tail[:, 1], "y-")
 
+# Plot all generated points
+plt.scatter(all_points[:, 0], all_points[:, 1], c="red", s=1, alpha=0.1)
 
 plt.grid(True)
 plt.axis("equal")  # Make sure the aspect ratio is equal

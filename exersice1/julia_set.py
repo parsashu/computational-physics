@@ -2,10 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def julia_set(c):
+def julia_set(c, max_iter):
     w = 800
     h = 800
-    max_iter = 300
     r = 1.5
     radius = 2
 
@@ -34,8 +33,8 @@ def julia_set(c):
     return iteration
 
 
-def plot_julia(c, cmap="magma"):
-    julia = julia_set(c)
+def plot_julia(c, cmap="magma", max_iter=350):
+    julia = julia_set(c, max_iter)
 
     # Create a custom colormap to make the set itself black
     if isinstance(cmap, str):
@@ -50,8 +49,14 @@ def plot_julia(c, cmap="magma"):
     plt.show()
 
 
-# plot_julia(c=-1j)
-# plot_julia(c=-0.7 + 0.27j)
-# plot_julia(c=-0.8 + 0.156j)
-plot_julia(c=-0.4 - 0.6j)
-# plot_julia(c=0.285 + 0.01j)
+# Book
+plot_julia(c=-1j)
+# plot_julia(c=-0.4 - 0.6j)
+# plot_julia(c=-0.4 + 0.6j)
+# plot_julia(c=-0.12 - 0.75j, max_iter=20)
+# plot_julia(c=-0.6, max_iter=20)
+# plot_julia(c=-0.8 + 0.16j)
+
+# Internet
+# plot_julia(c=-0.7 + 0.27j, max_iter=100, cmap="hot")
+# plot_julia(c=0.285 + 0.01j, max_iter=100, cmap="hot")

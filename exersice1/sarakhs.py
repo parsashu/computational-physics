@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-n_points = 10000  # Number of points
-p = 5
+n_points = 100000  # Number of points
+p = 20
 right_angle = -50
 left_angle = 50
 top_angle = -3
@@ -82,14 +82,14 @@ def random_point_generator():
 def right_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, right_angle)
-    scaled = scale_shape(rotated, 0.35, [1.66, 0.39])
+    scaled = scale_shape(rotated, 0.35, [1.5, 0.39])
     return scaled
 
 
 def left_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, left_angle)
-    scaled = scale_shape(rotated, 0.34, [0.45, 0.85])
+    scaled = scale_shape(rotated, 0.4, [0.7, 0.80])
     return scaled
 
 
@@ -103,7 +103,7 @@ def top_func(points):
 def tail_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, top_angle)
-    scaled = scale_shape(rotated, 0.19, [1, 0], tale=True)
+    scaled = scale_shape(rotated, 0.19, [1.17, 0], tale=True)
     return scaled
 
 
@@ -114,7 +114,9 @@ def sarakhs(n_points, p):
         point = random_point_generator()
 
         for _ in range(p):
-            random_func = np.random.choice([right_func, left_func, top_func, tail_func])
+            random_func = np.random.choice(
+                [right_func, left_func, top_func, tail_func], p=[0.32, 0.32, 0.32, 0.04]
+            )
             new_point = random_func(point)
             point = new_point
 
@@ -132,17 +134,12 @@ all_points = sarakhs(n_points, p)
 # Plot the square
 plt.figure(figsize=(8, 6))
 
-plt.plot(vertices[:, 0], vertices[:, 1], "k-")  # Draw lines connecting vertices
-plt.plot(right[:, 0], right[:, 1], "b-")
-plt.plot(left[:, 0], left[:, 1], "r-")
-plt.plot(top[:, 0], top[:, 1], "lightblue")
-plt.plot(tail[:, 0], tail[:, 1], "y-")
 
 # Plot all generated points
-plt.scatter(all_points[:, 0], all_points[:, 1], c="red", s=1, alpha=0.1)
+plt.scatter(all_points[:, 0], all_points[:, 1], c="green", s=1, alpha=1)
 
-plt.grid(True)
-plt.axis("equal")  # Make sure the aspect ratio is equal
+plt.grid(False)
+plt.axis("equal")
 plt.xlabel("X")
 plt.ylabel("Y")
 plt.show()

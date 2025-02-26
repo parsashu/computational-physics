@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-n_points = 1000  # Number of points
-p = 20
+n_points = 10000  # Number of points
+p = 5
 right_angle = -50
 left_angle = 50
 top_angle = -3
@@ -18,11 +18,6 @@ vertices = np.array(
         [0.0, 0.0],
     ]
 )
-
-A = vertices[0]
-B = vertices[1]
-C = vertices[2]
-D = vertices[3]
 
 all_points = vertices.copy()
 
@@ -55,41 +50,24 @@ def rotate_shape(points, angle_degrees, center_point=None):
     return rotated + center_point
 
 
-def scale_shape(points, scale_width, scale_length=None, center_point=None):
-    """Scale square's width and length independently, considering its orientation"""
-    if scale_length is None:
-        scale_length = scale_width
-
+def scale_shape(points, scale, center_point=None, tale=False):
     # If no center point given, use center of points
     if center_point is None:
         center_point = np.mean(points, axis=0)
 
-    # Calculate the orientation of the square
-    # Vector from bottom to top of square (length direction)
-    length_vector = points[1] - points[0]
-    angle = np.arctan2(length_vector[1], length_vector[0])
-
     # Translate to origin
     translated = points - center_point
 
-    # Rotate to align with axes
-    rotation_matrix = np.array(
-        [[np.cos(-angle), -np.sin(-angle)], [np.sin(-angle), np.cos(-angle)]]
-    )
-    aligned = np.dot(translated, rotation_matrix.T)
+    # If tale, make width 0
+    if tale:
+        scaling_matrix = np.array([[0, 0], [0, scale]])
+    else:
+        scaling_matrix = np.array([[scale, 0], [0, scale]])
 
-    # Scale
-    scaling_matrix = np.array([[scale_width, 0], [0, scale_length]])
-    scaled = np.dot(aligned, scaling_matrix)
-
-    # Rotate back
-    rotation_matrix = np.array(
-        [[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]]
-    )
-    rotated = np.dot(scaled, rotation_matrix.T)
+    scaled = np.dot(translated, scaling_matrix)
 
     # Translate back
-    points[:] = rotated + center_point
+    points[:] = scaled + center_point
     return points
 
 
@@ -104,28 +82,28 @@ def random_point_generator():
 def right_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, right_angle)
-    scaled = scale_shape(rotated, 0.35, 0.28, [1.66, 0.39])
+    scaled = scale_shape(rotated, 0.35, [1.66, 0.39])
     return scaled
 
 
 def left_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, left_angle)
-    scaled = scale_shape(rotated, 0.34, 0.30, [0.45, 0.85])
+    scaled = scale_shape(rotated, 0.34, [0.45, 0.85])
     return scaled
 
 
 def top_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, top_angle)
-    scaled = scale_shape(rotated, 0.82, 0.82, [1.4, 4.3])
+    scaled = scale_shape(rotated, 0.82, [1.4, 4.3])
     return scaled
 
 
 def tail_func(points):
     points_copy = points.copy()
     rotated = rotate_shape(points_copy, top_angle)
-    scaled = scale_shape(rotated, 0.19, 0.01, [1, 0])
+    scaled = scale_shape(rotated, 0.19, [1, 0], tale=True)
     return scaled
 
 
@@ -149,7 +127,7 @@ left = left_func(vertices)
 top = top_func(vertices)
 tail = tail_func(vertices)
 
-# all_points = sarakhs(n_points, p)
+all_points = sarakhs(n_points, p)
 
 # Plot the square
 plt.figure(figsize=(8, 6))

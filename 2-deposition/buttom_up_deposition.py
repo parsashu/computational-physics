@@ -26,22 +26,21 @@ def add_particle(position, color_value):
         additional_height = particle_colors.shape[0]  # Double the size
         zeros_to_append = np.zeros((additional_height, L), dtype=int)
         particle_colors = np.vstack((particle_colors, zeros_to_append))
-        
+
     # Wrap boundaries
     if position == L - 1:  # position = 199
         previous = position - 1
         next = 0
-    else: 
+    else:
         previous = position - 1
         next = position + 1
-
 
     # Add the particle with its color
     if surface[next] < surface[position]:
         height = int(surface[next])
         particle_colors[height, next] = color_value
         surface[next] += 1
-        
+
     elif surface[previous] < surface[position]:
         height = int(surface[previous])
         particle_colors[height, previous] = color_value
@@ -75,15 +74,19 @@ for i in range(time):
 
     w_array[i] = calculate_width()
 
-# Plot the width evolution over time
-plt.figure(figsize=(10, 6))
-plt.plot(range(time), w_array, "r-", alpha=0.7)
-plt.xlabel("Number of Deposited Particles")
-plt.ylabel("Surface Width (w)")
-plt.title("Surface Width Evolution in Buttom-up Deposition")
-plt.grid(True)
 
-# Fit the data to find the growth exponent (beta)
+# Create a log-log plot of width vs time
+plt.figure(figsize=(10, 6))
+# Filter out any zero values to avoid log(0) errors
+nonzero_indices = w_array > 0
+log_time = np.log10(np.arange(1, time + 1)[nonzero_indices])
+log_width = np.log10(w_array[nonzero_indices])
+plt.plot(log_time, log_width, "bo", alpha=0.5, markersize=2)
+plt.xlabel("log(Number of Deposited Particles)")
+plt.ylabel("log(Surface Width)")
+plt.title("Log-Log Plot of Surface Width vs Time")
+plt.grid(True)
+plt.show()
 
 
 # Define the power law function: w(t) = A * t^beta
@@ -92,24 +95,24 @@ def power_law(t, A, beta):
 
 
 # Use only the latter part of the data for fitting (after initial transient)
-fit_start = time // 10  # Start fitting from 10% of the data
-x_data = np.arange(fit_start, time)
-y_data = w_array[fit_start:]
+# fit_start = time // 10  # Start fitting from 10% of the data
+# x_data = np.arange(fit_start, time)
+# y_data = w_array[fit_start:]
 
-# Perform the curve fitting
-params, covariance = curve_fit(power_law, x_data, y_data)
-A_fit, beta_fit = params
-beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
+# # Perform the curve fitting
+# params, covariance = curve_fit(power_law, x_data, y_data)
+# A_fit, beta_fit = params
+# beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
 
-# Generate the fitted curve
-y_fit = power_law(x_data, A_fit, beta_fit)
+# # Generate the fitted curve
+# y_fit = power_law(x_data, A_fit, beta_fit)
 
-# Plot the fitted curve
-plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
-plt.legend()
+# # Plot the fitted curve
+# plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
+# plt.legend()
 
-print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
-print(f"Amplitude (A): {A_fit:.6e}")
+# print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
+# print(f"Amplitude (A): {A_fit:.6e}")
 plt.show()
 
 # Create a visualization

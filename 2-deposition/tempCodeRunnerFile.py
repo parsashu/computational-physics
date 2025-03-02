@@ -1,2 +1,2 @@
-        zeros_to_append = np.zeros((additional_height, L), dtype=int)
-        particle_colors = np.vstack((particle_colors, zeros_to_append))
+print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
+# print(f"Amplitude (A): {A_fit:.6e}")

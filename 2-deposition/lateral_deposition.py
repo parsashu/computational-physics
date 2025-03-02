@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-time = 100000
+time = 20000
 L = 200
 
 # Create an array of 200 zeros for height tracking
@@ -14,18 +14,14 @@ particle_colors = np.zeros((1, L), dtype=int)
 
 # Create arrays to track width over time
 w_array = np.zeros(time)
+# Create array to track total number of particles deposited at each position
+particle_count = np.zeros(L, dtype=int)
 
 
 # Function to add a particle and track its color
 def add_particle(position, color_value):
-    global particle_colors
+    global particle_colors, particle_count
     height = int(surface[position])
-
-    # Expand particle_colors array if needed
-    if height >= particle_colors.shape[0]:
-        additional_height = particle_colors.shape[0]  # Double the size
-        zeros_to_append = np.zeros((additional_height, L), dtype=int)
-        particle_colors = np.vstack((particle_colors, zeros_to_append))
 
     # Wrap boundaries
     if position == L - 1:  # position = 199
@@ -35,20 +31,39 @@ def add_particle(position, color_value):
         previous = position - 1
         next = position + 1
 
-    # Add the particle with its color
-    if surface[next] < surface[position]:
-        height = int(surface[next])
-        particle_colors[height, next] = color_value
-        surface[next] += 1
+    # Determine the maximum height needed
+    max_height_needed = height
+    if surface[next] > surface[position]:
+        max_height_needed = int(surface[next])
+    elif surface[previous] > surface[position]:
+        max_height_needed = int(surface[previous])
 
-    elif surface[previous] < surface[position]:
-        height = int(surface[previous])
-        particle_colors[height, previous] = color_value
-        surface[previous] += 1
+    # Expand particle_colors array if needed
+    while max_height_needed >= particle_colors.shape[0]:
+        additional_height = particle_colors.shape[0]  # Double the size
+        zeros_to_append = np.zeros((additional_height, L), dtype=int)
+        particle_colors = np.vstack((particle_colors, zeros_to_append))
+
+    # Add the particle with its color
+    if surface[next] > surface[position]:
+        max_height = int(surface[next])
+        particle_colors[max_height, position] = color_value
+        surface[position] += max_height - height
+        # Increment particle count at this position
+        particle_count[position] += 1
+
+    elif surface[previous] > surface[position]:
+        max_height = int(surface[previous])
+        particle_colors[max_height, position] = color_value
+        surface[position] += max_height - height
+        # Increment particle count at this position
+        particle_count[position] += 1
 
     else:
         particle_colors[height, position] = color_value
         surface[position] += 1
+        # Increment particle count at this position
+        particle_count[position] += 1
 
 
 def calculate_width():
@@ -79,7 +94,7 @@ plt.figure(figsize=(10, 6))
 plt.plot(range(time), w_array, "r-", alpha=0.7)
 plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
-plt.title(f"Surface Width Evolution in Buttom-up Deposition (Particles: {time})")
+plt.title(f"Surface Width Evolution in Lateral Deposition (Total Particles: {time})")
 plt.grid(True)
 
 
@@ -130,5 +145,7 @@ plt.ylabel("Height")
 num_ticks = 5  # Adjust this for more or fewer ticks
 plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
 
-plt.title(f"Buttom-up Deposition Model (Particles: {time})")
+plt.title(f"Lateral Deposition Model (Total Particles: {time})")
 plt.show()
+
+

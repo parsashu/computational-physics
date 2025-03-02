@@ -60,7 +60,7 @@ plt.figure(figsize=(10, 6))
 plt.plot(range(time), w_array, "r-", alpha=0.7)
 plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
-plt.title("Surface Width Evolution in Random Deposition")
+plt.title(f"Surface Width Evolution in Random Deposition (Particles: {time})")
 plt.grid(True)
 
 # Fit the data to find the growth exponent (beta)
@@ -113,5 +113,5 @@ plt.ylabel("Height")
 num_ticks = 5  # Adjust this for more or fewer ticks
 plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
 
-plt.title("Random Deposition Model")
+plt.title(f"Random Deposition Model (Particles: {time})")
 plt.show()

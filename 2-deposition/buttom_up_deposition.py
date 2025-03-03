@@ -87,20 +87,19 @@ log_width = np.log10(width_data)
 # Plot the raw data in log-log space
 plt.plot(log_time, log_width, "b.", alpha=0.5, label="Data")
 
-# Fit line to log-log data (skip first 10% of data)
-fit_start = len(log_time) // 10
-slope, intercept = np.polyfit(log_time[fit_start:], log_width[fit_start:], 1)
+# Fit constant function (using mean of log_width)
+constant_value = np.mean(log_width)
 
 # Generate fitted line points
 x_fit = np.linspace(log_time[0], log_time[-1], 100)
-y_fit = slope * x_fit + intercept
+y_fit = np.full_like(x_fit, constant_value)
 
-# Plot the linear fit
+# Plot the constant fit
 plt.plot(
     x_fit,
     y_fit,
     "r-",
-    label=f"Linear Fit: slope = {slope:.3f}",
+    label=f"Constant Fit: y = {constant_value:.3f}",
 )
 
 plt.xlabel("log(Number of Deposited Particles)")
@@ -120,7 +119,7 @@ plt.grid(True)
 plt.legend()
 plt.show()
 
-print(f"Growth exponent (β): {slope:.4f}")
+print(f"Growth exponent (β): {constant_value:.4f}")
 
 
 # # Use only the latter part of the data for fitting (after initial transient)

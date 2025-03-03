@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-time = 100000
+time = 1000000
 L = 200
 
 # Create an array of 200 zeros for height tracking
@@ -74,82 +74,99 @@ for i in range(time):
 
     w_array[i] = calculate_width()
 
-# Plot the width evolution over time
-plt.figure(figsize=(10, 6))
-plt.plot(range(time), w_array, "r-", alpha=0.7)
-plt.xlabel("Number of Deposited Particles")
-plt.ylabel("Surface Width (w)")
-plt.title(f"Surface Width Evolution in Buttom-up Deposition (Particles: {time})")
-plt.grid(True)
-plt.show()
 
-# Create a log-log plot of width vs time
-plt.figure(figsize=(10, 6))
 # Filter out zero values to avoid log(0) issues
 nonzero_indices = np.where(w_array > 0)[0]
-log_time = np.log10(nonzero_indices + 1)  # +1 to avoid log(0)
-log_width = np.log10(w_array[nonzero_indices])
+time_data = nonzero_indices + 1  # +1 to avoid log(0)
+width_data = w_array[nonzero_indices]
 
-plt.plot(log_time, log_width, "b.", alpha=0.5)
+# Convert to log space
+log_time = np.log10(time_data)
+log_width = np.log10(width_data)
+
+# Plot the raw data in log-log space
+plt.plot(log_time, log_width, "b.", alpha=0.5, label="Data")
+
+# Fit line to log-log data (skip first 10% of data)
+fit_start = len(log_time) // 10
+slope, intercept = np.polyfit(log_time[fit_start:], log_width[fit_start:], 1)
+
+# Generate fitted line points
+x_fit = np.linspace(log_time[0], log_time[-1], 100)
+y_fit = slope * x_fit + intercept
+
+# Plot the linear fit
+plt.plot(
+    x_fit,
+    y_fit,
+    "r-",
+    label=f"Linear Fit: slope = {slope:.3f}",
+)
+
 plt.xlabel("log(Number of Deposited Particles)")
+# Increase number of x-axis ticks
+x_min, x_max = plt.xlim()
+plt.xticks(np.linspace(x_min, x_max, 15))  # 15 ticks from min to max
+
 plt.ylabel("log(Surface Width)")
+
+# Increase number of y-axis ticks
+y_min, y_max = plt.ylim()
+plt.yticks(np.linspace(y_min, y_max, 15))  # 15 ticks from min to max
+
 plt.title("Log-Log Plot of Surface Width vs Number of Particles")
+
 plt.grid(True)
-plt.show()
-
-
-# Define the power law function: w(t) = A * t^beta
-def power_law(t, A, beta):
-    return A * t**beta
-
-
-# Use only the latter part of the data for fitting (after initial transient)
-fit_start = time // 10  # Start fitting from 10% of the data
-x_data = np.arange(fit_start, time)
-y_data = w_array[fit_start:]
-
-# Perform the curve fitting
-params, covariance = curve_fit(power_law, x_data, y_data)
-A_fit, beta_fit = params
-beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
-
-# Generate the fitted curve
-y_fit = power_law(x_data, A_fit, beta_fit)
-
-# Plot the fitted curve
-plt.figure(figsize=(10, 6))
-plt.plot(x_data, y_data, "r-", alpha=0.7)
-plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
-plt.xlabel("Number of Deposited Particles")
-plt.ylabel("Surface Width (w)")
-plt.title(f"Surface Width Evolution with Power Law Fit (Particles: {time})")
 plt.legend()
-plt.grid(True)
-
-print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
-print(f"Amplitude (A): {A_fit:.6e}")
 plt.show()
 
-# Create a visualization
-max_height = int(np.max(surface))
+print(f"Growth exponent (β): {slope:.4f}")
 
-# Create a custom colormap: 0=white, 1=blue, 2=light blue
-colors = ["white", "blue", "skyblue"]
-cmap = ListedColormap(colors)
 
-# Plot the pixel-based surface
-plt.figure(figsize=(10, 6))
+# # Use only the latter part of the data for fitting (after initial transient)
+# fit_start = time // 100  # Start fitting from 1% of the data
+# x_data = np.arange(fit_start, time)
+# y_data = w_array[fit_start:]
 
-# Trim the particle_colors array to only include the heights we need
-particle_colors_trimmed = particle_colors[:max_height, :]
+# # Perform the curve fitting
+# params, covariance = curve_fit(power_law, x_data, y_data)
+# A_fit, beta_fit = params
+# beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
 
-plt.imshow(particle_colors_trimmed, cmap=cmap, interpolation="none", origin="lower")
-plt.xlabel("Position")
-plt.ylabel("Height")
+# # Generate the fitted curve
+# plt.figure(figsize=(10, 6))
+# plt.plot(x_data, y_data, "r-", alpha=0.7)
+# plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
+# plt.xlabel("Number of Deposited Particles")
+# plt.ylabel("Surface Width (w)")
+# plt.title(f"Surface Width Evolution with Power Law Fit (Particles: {time})")
+# plt.legend()
+# plt.grid(True)
 
-# Set y-ticks to show actual heights (no need for custom calculation now)
-num_ticks = 5  # Adjust this for more or fewer ticks
-plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
+# print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
+# print(f"Amplitude (A): {A_fit:.6e}")
+# plt.show()
 
-plt.title(f"Buttom-up Deposition Model (Particles: {time})")
-plt.show()
+# # Create a visualization
+# max_height = int(np.max(surface))
+
+# # Create a custom colormap: 0=white, 1=blue, 2=light blue
+# colors = ["white", "blue", "skyblue"]
+# cmap = ListedColormap(colors)
+
+# # Plot the pixel-based surface
+# plt.figure(figsize=(10, 6))
+
+# # Trim the particle_colors array to only include the heights we need
+# particle_colors_trimmed = particle_colors[:max_height, :]
+
+# plt.imshow(particle_colors_trimmed, cmap=cmap, interpolation="none", origin="lower")
+# plt.xlabel("Position")
+# plt.ylabel("Height")
+
+# # Set y-ticks to show actual heights (no need for custom calculation now)
+# num_ticks = 5  # Adjust this for more or fewer ticks
+# plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
+
+# plt.title(f"Buttom-up Deposition Model (Particles: {time})")
+# plt.show()

@@ -1,23 +1,26 @@
-# Create a visualization
-# max_height = int(np.max(surface))
+# Use only the latter part of the data for fitting (after initial transient)
+# fit_start = time // 100  # Start fitting from 1% of the data
+# x_data = np.arange(fit_start, time)
+# y_data = w_array[fit_start:]
 
-# # Create a custom colormap: 0=white, 1=blue, 2=light blue
-# colors = ["white", "blue", "skyblue"]
-# cmap = ListedColormap(colors)
+# # Perform the curve fitting
+# params, covariance = curve_fit(power_law, x_data, y_data)
+# A_fit, beta_fit = params
+# beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
 
-# # Plot the pixel-based surface
+# # Generate the fitted curve
+# y_fit = power_law(x_data, A_fit, beta_fit)
+
+# # Plot the fitted curve
 # plt.figure(figsize=(10, 6))
+# plt.plot(x_data, y_data, "r-", alpha=0.7)
+# plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
+# plt.xlabel("Number of Deposited Particles")
+# plt.ylabel("Surface Width (w)")
+# plt.title(f"Surface Width Evolution with Power Law Fit (Particles: {time})")
+# plt.legend()
+# plt.grid(True)
 
-# # Trim the particle_colors array to only include the heights we need
-# particle_colors_trimmed = particle_colors[:max_height, :]
-
-# plt.imshow(particle_colors_trimmed, cmap=cmap, interpolation="none", origin="lower")
-# plt.xlabel("Position")
-# plt.ylabel("Height")
-
-# # Set y-ticks to show actual heights (no need for custom calculation now)
-# num_ticks = 5  # Adjust this for more or fewer ticks
-# plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
-
-# plt.title("Buttom-up Deposition Model")
+# print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
+# print(f"Amplitude (A): {A_fit:.6e}")
 # plt.show()

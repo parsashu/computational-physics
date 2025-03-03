@@ -81,6 +81,21 @@ plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
 plt.title(f"Surface Width Evolution in Buttom-up Deposition (Particles: {time})")
 plt.grid(True)
+plt.show()
+
+# Create a log-log plot of width vs time
+plt.figure(figsize=(10, 6))
+# Filter out zero values to avoid log(0) issues
+nonzero_indices = np.where(w_array > 0)[0]
+log_time = np.log10(nonzero_indices + 1)  # +1 to avoid log(0)
+log_width = np.log10(w_array[nonzero_indices])
+
+plt.plot(log_time, log_width, "b.", alpha=0.5)
+plt.xlabel("log(Number of Deposited Particles)")
+plt.ylabel("log(Surface Width)")
+plt.title("Log-Log Plot of Surface Width vs Number of Particles")
+plt.grid(True)
+plt.show()
 
 
 # Define the power law function: w(t) = A * t^beta
@@ -102,8 +117,14 @@ beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
 y_fit = power_law(x_data, A_fit, beta_fit)
 
 # Plot the fitted curve
+plt.figure(figsize=(10, 6))
+plt.plot(x_data, y_data, "r-", alpha=0.7)
 plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
+plt.xlabel("Number of Deposited Particles")
+plt.ylabel("Surface Width (w)")
+plt.title(f"Surface Width Evolution with Power Law Fit (Particles: {time})")
 plt.legend()
+plt.grid(True)
 
 print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
 print(f"Amplitude (A): {A_fit:.6e}")

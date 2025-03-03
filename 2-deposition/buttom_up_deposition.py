@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-time = 1000000
+N = 1000
 L = 200
 
 # Create an array of 200 zeros for height tracking
@@ -13,7 +13,7 @@ surface = np.zeros(L)
 particle_colors = np.zeros((1, L), dtype=int)
 
 # Create arrays to track width over time
-w_array = np.zeros(time)
+w_array = np.zeros(N)
 
 
 # Function to add a particle and track its color
@@ -59,12 +59,12 @@ def calculate_width():
 
 
 # Deposit particles with alternating colors
-for i in range(time):
+for i in range(N):
     # Choose a random integer between 0 and 199
     random_position = np.random.randint(0, L)
 
     # Determine color based on deposition time
-    if (i // (time / 4)) % 2 == 0:
+    if (i // (N / 4)) % 2 == 0:
         color = 1  # Blue
     else:
         color = 2  # Light blue
@@ -75,7 +75,7 @@ for i in range(time):
     w_array[i] = calculate_width()
 
 
-# Filter out zero values to avoid log(0) issues
+# Filter out zero values to avoid log(0) issues--------------------------------
 nonzero_indices = np.where(w_array > 0)[0]
 time_data = nonzero_indices + 1  # +1 to avoid log(0)
 width_data = w_array[nonzero_indices]
@@ -113,18 +113,29 @@ plt.ylabel("log(Surface Width)")
 y_min, y_max = plt.ylim()
 plt.yticks(np.linspace(y_min, y_max, 15))  # 15 ticks from min to max
 
-plt.title("Log-Log Plot of Surface Width vs Number of Particles")
+plt.title(f"Log-Log Plot of Surface Width vs Number of Particles (L={L}, N={N})")
 
 plt.grid(True)
 plt.legend()
 plt.show()
 
-print(f"Growth exponent (β): {constant_value:.4f}")
+
+# # Plot the width evolution over time to find beta----------------------
+# plt.figure(figsize=(10, 6))
+# plt.plot(range(N), w_array, "r-", alpha=0.7)
+# plt.xlabel("Number of Deposited Particles")
+# plt.ylabel("Surface Width (w)")
+# plt.title(f"Surface Width Evolution in Random Deposition (Particles: {N})")
+# plt.grid(True)
+
+# # Define the power law function: w(t) = A * t^beta
+# def power_law(t, A, beta):
+#     return A * t**beta
 
 
 # # Use only the latter part of the data for fitting (after initial transient)
-# fit_start = time // 100  # Start fitting from 1% of the data
-# x_data = np.arange(fit_start, time)
+# fit_start = N // 10  # Start fitting from 10% of the data
+# x_data = np.arange(fit_start, N)
 # y_data = w_array[fit_start:]
 
 # # Perform the curve fitting
@@ -133,20 +144,18 @@ print(f"Growth exponent (β): {constant_value:.4f}")
 # beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
 
 # # Generate the fitted curve
-# plt.figure(figsize=(10, 6))
-# plt.plot(x_data, y_data, "r-", alpha=0.7)
+# y_fit = power_law(x_data, A_fit, beta_fit)
+
+# # Plot the fitted curve
 # plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
-# plt.xlabel("Number of Deposited Particles")
-# plt.ylabel("Surface Width (w)")
-# plt.title(f"Surface Width Evolution with Power Law Fit (Particles: {time})")
 # plt.legend()
-# plt.grid(True)
 
 # print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
 # print(f"Amplitude (A): {A_fit:.6e}")
 # plt.show()
 
-# # Create a visualization
+
+# # Create a visualization-------------------------------------------------
 # max_height = int(np.max(surface))
 
 # # Create a custom colormap: 0=white, 1=blue, 2=light blue

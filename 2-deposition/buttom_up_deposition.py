@@ -74,6 +74,19 @@ for i in range(N):
     w_array[i] = calculate_width()
 
 
+# Example to demonstrate np.where
+example_array = np.array([0, 3, 0, 5, 0, 2, 0, 0])
+print("Example array:", example_array)
+nonzero_positions = np.where(example_array != 0)[0]
+print("Positions of non-zero elements:", nonzero_positions)
+print("Last non-zero position:", nonzero_positions[-1])
+print("Value at last non-zero position:", example_array[nonzero_positions[-1]])
+print("\n")
+
+# Find and print the last non-zero number in surface
+last_nonzero = surface[np.where(surface != 0)[0][-1]]
+print(f"Last non-zero height in surface: {last_nonzero}")
+
 # Filter out zero values to avoid log(0) issues--------------------------------
 nonzero_indices = np.where(w_array > 0)[0]
 time_data = nonzero_indices + 1  # +1 to avoid log(0)
@@ -126,6 +139,7 @@ plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
 plt.title(f"Surface Width Evolution in Random Deposition (Particles: {N})")
 plt.grid(True)
+
 
 # Define the power law function: w(t) = A * t^beta
 def power_law(t, A, beta):

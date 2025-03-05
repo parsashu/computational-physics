@@ -4,8 +4,8 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-N = 4000000
-L = 100
+N = 40000
+L = 500
 
 # Create an array of 200 zeros for height tracking
 surface = np.zeros(L)
@@ -17,7 +17,6 @@ particle_colors[0, L // 2] = 1
 
 # Create arrays to track width over time
 w_array = np.zeros(N)
-
 
 
 # Function to add a particle and track its color
@@ -52,23 +51,21 @@ def add_particle(position, color_value):
         particle_colors[max_height, position] = color_value
         surface[position] += max_height - height
 
-
     elif surface[previous] > surface[position]:
         max_height = int(surface[previous])
         particle_colors[max_height, position] = color_value
         surface[position] += max_height - height
 
     else:
-        if height != 0:    
+        if height != 0:
             particle_colors[height, position] = color_value
             surface[position] += 1
 
 
 def calculate_width():
-    mean_height = np.mean(surface)
-    mean_height_squared = np.mean(surface**2)
-    w = (mean_height_squared - mean_height**2) ** 0.5
-    return w
+    i_last = np.where(surface != 0)[0][-1]
+    i_first = np.where(surface != 0)[0][0]
+    return i_last - i_first
 
 
 # Deposit particles with alternating colors
@@ -86,51 +83,6 @@ for i in range(N):
     add_particle(random_position, color)
 
     w_array[i] = calculate_width()
-
-
-# Filter out zero values to avoid log(0) issues--------------------------------
-nonzero_indices = np.where(w_array > 0)[0]
-time_data = nonzero_indices + 1  # +1 to avoid log(0)
-width_data = w_array[nonzero_indices]
-
-# Convert to log space
-log_time = np.log10(time_data)
-log_width = np.log10(width_data)
-
-# Plot the raw data in log-log space
-plt.plot(log_time, log_width, "b.", alpha=0.5, label="Data")
-
-# Fit constant function (using mean of log_width)
-constant_value = np.mean(log_width)
-
-# Generate fitted line points
-x_fit = np.linspace(log_time[0], log_time[-1], 100)
-y_fit = np.full_like(x_fit, constant_value)
-
-# Plot the constant fit
-plt.plot(
-    x_fit,
-    y_fit,
-    "r-",
-    label=f"Constant Fit: y = {constant_value:.3f}",
-)
-
-plt.xlabel("log(Number of Deposited Particles)")
-# Increase number of x-axis ticks
-x_min, x_max = plt.xlim()
-plt.xticks(np.linspace(x_min, x_max, 15))  # 15 ticks from min to max
-
-plt.ylabel("log(Surface Width)")
-
-# Increase number of y-axis ticks
-y_min, y_max = plt.ylim()
-plt.yticks(np.linspace(y_min, y_max, 15))  # 15 ticks from min to max
-
-plt.title(f"Log-Log Plot of Surface Width vs Number of Particles (L={L}, N={N})")
-
-plt.grid(True)
-plt.legend()
-plt.show()
 
 
 # Plot the width evolution over time to find, beta N = 2000----------------------
@@ -168,26 +120,27 @@ print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
 print(f"Amplitude (A): {A_fit:.6e}")
 plt.show()
 
-# # Create a visualization-------------------------------------------------
-# max_height = int(np.max(surface))
 
-# # Create a custom colormap: 0=white, 1=blue, 2=light blue
-# colors = ["white", "blue", "skyblue"]
-# cmap = ListedColormap(colors)
+# Create a visualization-------------------------------------------------
+max_height = int(np.max(surface))
 
-# # Plot the pixel-based surface
-# plt.figure(figsize=(10, 6))
+# Create a custom colormap: 0=white, 1=blue, 2=light blue
+colors = ["white", "blue", "skyblue"]
+cmap = ListedColormap(colors)
 
-# # Trim the particle_colors array to only include the heights we need
-# particle_colors_trimmed = particle_colors[:max_height, :]
+# Plot the pixel-based surface
+plt.figure(figsize=(10, 6))
 
-# plt.imshow(particle_colors_trimmed, cmap=cmap, interpolation="none", origin="lower")
-# plt.xlabel("Position")
-# plt.ylabel("Height")
+# Trim the particle_colors array to only include the heights we need
+particle_colors_trimmed = particle_colors[:max_height, :]
 
-# # Set y-ticks to show actual heights (no need for custom calculation now)
-# num_ticks = 5  # Adjust this for more or fewer ticks
-# plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
+plt.imshow(particle_colors_trimmed, cmap=cmap, interpolation="none", origin="lower")
+plt.xlabel("Position")
+plt.ylabel("Height")
 
-# plt.title(f"Lateral Deposition Model (Total Particles: {N})")
-# plt.show()
+# Set y-ticks to show actual heights (no need for custom calculation now)
+num_ticks = 5  # Adjust this for more or fewer ticks
+plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
+
+plt.title(f"Lateral Deposition Model (Total Particles: {N})")
+plt.show()

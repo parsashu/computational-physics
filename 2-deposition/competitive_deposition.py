@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-from scipy.optimize import curve_fit
 
 
 N = 1000
@@ -14,7 +13,7 @@ w_array = np.zeros(N)
 
 
 def add_particle(position, color_value):
-    '''Function to add a particle and track its color'''
+    """Function to add a particle and track its color"""
     global particle_colors
     height = max_height - 1
 
@@ -69,5 +68,14 @@ plt.ylabel("Height")
 num_ticks = 5
 plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
 
-plt.title(f"Random Deposition Model (Particles: {N})")
+plt.title(f"Competitive Deposition Model (Particles: {N})")
+plt.show()
+
+# Create a histogram of surface heights
+plt.figure(figsize=(10, 6))
+plt.hist(surface, bins=30, color="blue", alpha=0.7, edgecolor="black")
+plt.xlabel("Height")
+plt.ylabel("Frequency")
+plt.title("Histogram of Surface Heights")
+plt.grid(True, alpha=0.3)
 plt.show()

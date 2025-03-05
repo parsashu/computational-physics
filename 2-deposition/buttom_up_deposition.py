@@ -17,13 +17,12 @@ def add_particle(position, color_value):
     global particle_colors
     height = int(surface[position])
 
-    # Expand particle_colors array if needed
     if height >= particle_colors.shape[0]:
         additional_height = particle_colors.shape[0]  # Double the size
         zeros_to_append = np.zeros((additional_height, L), dtype=int)
         particle_colors = np.vstack((particle_colors, zeros_to_append))
 
-    # Wrap boundaries
+    # Periodic boundaries
     if position == L - 1:  # position = 199
         previous = position - 1
         next = 0
@@ -70,21 +69,16 @@ nonzero_indices = np.where(w_array > 0)[0]
 time_data = nonzero_indices + 1  # +1 to avoid log(0)
 width_data = w_array[nonzero_indices]
 
-# Convert to log space
 log_time = np.log10(time_data)
 log_width = np.log10(width_data)
 
-# Plot the raw data in log-log space
 plt.plot(log_time, log_width, "b.", alpha=0.5, label="Data")
 
-# Fit constant function (using mean of log_width)
 constant_value = np.mean(log_width)
 
-# Generate fitted line points
 x_fit = np.linspace(log_time[0], log_time[-1], 100)
 y_fit = np.full_like(x_fit, constant_value)
 
-# Plot the constant fit
 plt.plot(
     x_fit,
     y_fit,
@@ -93,15 +87,13 @@ plt.plot(
 )
 
 plt.xlabel("log(Number of Deposited Particles)")
-# Increase number of x-axis ticks
 x_min, x_max = plt.xlim()
-plt.xticks(np.linspace(x_min, x_max, 15))  # 15 ticks from min to max
+plt.xticks(np.linspace(x_min, x_max, 15))
 
 plt.ylabel("log(Surface Width)")
 
-# Increase number of y-axis ticks
 y_min, y_max = plt.ylim()
-plt.yticks(np.linspace(y_min, y_max, 15))  # 15 ticks from min to max
+plt.yticks(np.linspace(y_min, y_max, 15))
 
 plt.title(f"Log-Log Plot of Surface Width vs Number of Particles (L={L}, N={N})")
 
@@ -156,7 +148,7 @@ plt.imshow(particle_colors_trimmed, cmap=cmap, interpolation="none", origin="low
 plt.xlabel("Position")
 plt.ylabel("Height")
 
-num_ticks = 5  # Adjust this for more or fewer ticks
+num_ticks = 5
 plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
 
 plt.title(f"Buttom-up Deposition Model (Particles: {N})")

@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-time = 50000
+N = 50000
 L = 200
 
 # Create an array of 200 zeros for height tracking
@@ -13,7 +13,7 @@ surface = np.zeros(L)
 particle_colors = np.zeros((1, L), dtype=int)
 
 # Create arrays to track width over time
-w_array = np.zeros(time)
+w_array = np.zeros(N)
 
 
 # Function to add a particle and track its color
@@ -40,12 +40,12 @@ def calculate_width():
 
 
 # Deposit particles with alternating colors
-for i in range(time):
+for i in range(N):
     # Choose a random integer between 0 and 199
     random_position = np.random.randint(0, L)
 
     # Determine color based on deposition time
-    if (i // (time / 4)) % 2 == 0:
+    if (i // (N / 4)) % 2 == 0:
         color = 1  # Blue
     else:
         color = 2  # Light blue
@@ -57,10 +57,10 @@ for i in range(time):
 
 # Plot the width evolution over time
 plt.figure(figsize=(10, 6))
-plt.plot(range(time), w_array, "r-", alpha=0.7)
+plt.plot(range(N), w_array, "r-", alpha=0.7)
 plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
-plt.title(f"Surface Width Evolution in Random Deposition (Particles: {time})")
+plt.title(f"Surface Width Evolution in Random Deposition (Particles: {N})")
 plt.grid(True)
 
 # Fit the data to find the growth exponent (beta)
@@ -72,8 +72,8 @@ def power_law(t, A, beta):
 
 
 # Use only the latter part of the data for fitting (after initial transient)
-fit_start = time // 10  # Start fitting from 10% of the data
-x_data = np.arange(fit_start, time)
+fit_start = N // 10  # Start fitting from 10% of the data
+x_data = np.arange(fit_start, N)
 y_data = w_array[fit_start:]
 
 # Perform the curve fitting
@@ -113,5 +113,5 @@ plt.ylabel("Height")
 num_ticks = 5  # Adjust this for more or fewer ticks
 plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
 
-plt.title(f"Random Deposition Model (Particles: {time})")
+plt.title(f"Random Deposition Model (Particles: {N})")
 plt.show()

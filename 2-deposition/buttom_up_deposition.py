@@ -119,7 +119,7 @@ plt.legend()
 plt.show()
 
 
-# Plot the width evolution over time to find beta----------------------
+# Plot the width evolution over time to find beta, N = 1000----------------------
 plt.figure(figsize=(10, 6))
 plt.plot(range(N), w_array, "r-", alpha=0.7)
 plt.xlabel("Number of Deposited Particles")

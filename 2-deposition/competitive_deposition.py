@@ -4,9 +4,9 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-N = 5000
+N = 1000
 L = 200
-max_height = 500
+max_height = 300
 
 # Create an array of 200 zeros for height tracking
 surface = np.zeros(L)
@@ -20,16 +20,27 @@ w_array = np.zeros(N)
 # Function to add a particle and track its color
 def add_particle(position, color_value):
     global particle_colors
-    height = max_height
-    
+    height = max_height - 1
+
     while True:
-        if surface[position] + 1 >= height:      
-            # Add the particle with its color
+        # Check if it's a hit
+        if height == 0:
+            # Add the particle with it's color
             particle_colors[height, position] = color_value
             surface[position] += 1
             break
-        
-        position -= 1
+
+        elif surface[position] + 1 >= height:
+            # Add the particle with it's color
+            particle_colors[height, position] = color_value
+            surface[position] += 1
+            break
+
+        # If it's not a hit, move the particle
+        if position == 0:
+            position = L - 1
+        else:
+            position -= 1
         height -= 1
 
 
@@ -56,45 +67,41 @@ for i in range(N):
 
     w_array[i] = calculate_width()
 
-# Plot the width evolution over time
-plt.figure(figsize=(10, 6))
-plt.plot(range(N), w_array, "r-", alpha=0.7)
-plt.xlabel("Number of Deposited Particles")
-plt.ylabel("Surface Width (w)")
-plt.title(f"Surface Width Evolution in Random Deposition (Particles: {N})")
-plt.grid(True)
-
-# Fit the data to find the growth exponent (beta)
+# # Plot the width evolution over time
+# plt.figure(figsize=(10, 6))
+# plt.plot(range(N), w_array, "r-", alpha=0.7)
+# plt.xlabel("Number of Deposited Particles")
+# plt.ylabel("Surface Width (w)")
+# plt.title(f"Surface Width Evolution in Random Deposition (Particles: {N})")
+# plt.grid(True)
 
 
-# Define the power law function: w(t) = A * t^beta
-def power_law(t, A, beta):
-    return A * t**beta
+# # Define the power law function: w(t) = A * t^beta
+# def power_law(t, A, beta):
+#     return A * t**beta
 
 
-# Use only the latter part of the data for fitting (after initial transient)
-fit_start = N // 10  # Start fitting from 10% of the data
-x_data = np.arange(fit_start, N)
-y_data = w_array[fit_start:]
+# # Use only the latter part of the data for fitting (after initial transient)
+# fit_start = N // 10  # Start fitting from 10% of the data
+# x_data = np.arange(fit_start, N)
+# y_data = w_array[fit_start:]
 
-# Perform the curve fitting
-params, covariance = curve_fit(power_law, x_data, y_data)
-A_fit, beta_fit = params
-beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
+# # Perform the curve fitting
+# params, covariance = curve_fit(power_law, x_data, y_data)
+# A_fit, beta_fit = params
+# beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
 
-# Generate the fitted curve
-y_fit = power_law(x_data, A_fit, beta_fit)
+# # Generate the fitted curve
+# y_fit = power_law(x_data, A_fit, beta_fit)
 
-# Plot the fitted curve
-plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
-plt.legend()
+# # Plot the fitted curve
+# plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
+# plt.legend()
 
-print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
-print(f"Amplitude (A): {A_fit:.6e}")
-plt.show()
+# print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
+# print(f"Amplitude (A): {A_fit:.6e}")
+# plt.show()
 
-# Create a visualization
-max_height = int(np.max(surface))
 
 # Create a custom colormap: 0=white, 1=blue, 2=light blue
 colors = ["white", "blue", "skyblue"]

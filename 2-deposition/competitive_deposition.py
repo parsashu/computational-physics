@@ -23,16 +23,11 @@ def add_particle(position, color_value):
     height = max_height - 1
 
     while True:
+        bar_height = int(surface[position])
         # Check if it's a hit
-        if height == 0:
+        if bar_height >= height:
             # Add the particle with it's color
-            particle_colors[height, position] = color_value
-            surface[position] += 1
-            break
-
-        elif surface[position] + 1 >= height:
-            # Add the particle with it's color
-            particle_colors[height, position] = color_value
+            particle_colors[bar_height, position] = color_value
             surface[position] += 1
             break
 
@@ -53,7 +48,8 @@ def calculate_width():
 
 # Deposit particles with alternating colors
 for i in range(N):
-
+    if max(surface) >= max_height:
+        break
     random_position = np.random.randint(0, L)
 
     # Determine color based on deposition time

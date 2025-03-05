@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap
 from scipy.optimize import curve_fit
 
 
-N = 40000
+N = 100000
 L = 500
 
 # Create an array of 200 zeros for height tracking
@@ -90,13 +90,13 @@ plt.figure(figsize=(10, 6))
 plt.plot(range(N), w_array, "r-", alpha=0.7)
 plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
-plt.title(f"Surface Width Evolution in Lateral Deposition (Total Particles: {N})")
+plt.title(f"Surface Width Evolution in Lateral Deposition (N={N}, L={L})")
 plt.grid(True)
 
 
-# Define the power law function: w(t) = A * t^beta
-def power_law(t, A, beta):
-    return A * t**beta
+# Define the linear function: w(t) = m*t + b
+def linear_func(t, m, b):
+    return m * t + b
 
 
 # Use only the latter part of the data for fitting (after initial transient)
@@ -104,20 +104,22 @@ fit_start = N // 10  # Start fitting from 10% of the data
 x_data = np.arange(fit_start, N)
 y_data = w_array[fit_start:]
 
-# Perform the curve fitting
-params, covariance = curve_fit(power_law, x_data, y_data)
-A_fit, beta_fit = params
-beta_error = np.sqrt(np.diag(covariance))[1]  # Extract the error in beta
+# Perform the linear fitting
+params, covariance = curve_fit(linear_func, x_data, y_data)
+m_fit, b_fit = params
+m_error, b_error = np.sqrt(np.diag(covariance))
 
 # Generate the fitted curve
-y_fit = power_law(x_data, A_fit, beta_fit)
+y_fit = linear_func(x_data, m_fit, b_fit)
 
-# Plot the fitted curve
-plt.plot(x_data, y_fit, "b--", label=f"Fitted: t^{beta_fit:.3f}±{beta_error:.3f}")
+# Plot the fitted line
+plt.plot(
+    x_data, y_fit, "b--", label=f"Fitted: {m_fit:.3f}±{m_error:.3f}*t + {b_fit:.1f}"
+)
 plt.legend()
 
-print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
-print(f"Amplitude (A): {A_fit:.6e}")
+print(f"Fitted slope (m): {m_fit:.4f} ± {m_error:.4f}")
+print(f"Y-intercept (b): {b_fit:.4f} ± {b_error:.4f}")
 plt.show()
 
 
@@ -142,5 +144,5 @@ plt.ylabel("Height")
 num_ticks = 5  # Adjust this for more or fewer ticks
 plt.yticks(np.linspace(0, max_height - 1, num_ticks).astype(int))
 
-plt.title(f"Lateral Deposition Model (Total Particles: {N})")
+plt.title(f"Lateral Deposition Model (N={N}, L={L})")
 plt.show()

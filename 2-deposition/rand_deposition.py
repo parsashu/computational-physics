@@ -55,16 +55,13 @@ for i in range(N):
 
     w_array[i] = calculate_width()
 
-# Plot the width evolution over time
+# Plot the width evolution over time----------------------------------------
 plt.figure(figsize=(10, 6))
 plt.plot(range(N), w_array, "r-", alpha=0.7)
 plt.xlabel("Number of Deposited Particles")
 plt.ylabel("Surface Width (w)")
 plt.title(f"Surface Width Evolution in Random Deposition (Particles: {N})")
 plt.grid(True)
-
-# Fit the data to find the growth exponent (beta)
-
 
 # Define the power law function: w(t) = A * t^beta
 def power_law(t, A, beta):
@@ -92,7 +89,7 @@ print(f"Fitted growth exponent (beta): {beta_fit:.4f} ± {beta_error:.4f}")
 print(f"Amplitude (A): {A_fit:.6e}")
 plt.show()
 
-# Create a visualization
+# Create a visualization---------------------------------------------------
 max_height = int(np.max(surface))
 
 # Create a custom colormap: 0=white, 1=blue, 2=light blue

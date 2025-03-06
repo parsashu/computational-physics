@@ -15,7 +15,7 @@ w_array = np.zeros(N)
 def add_particle(position, color_value):
     """Function to add a particle and track its color"""
     global particle_colors
-    height = max_height - 1
+    height = 2 * max_height
 
     while True:
         bar_height = int(surface[position])

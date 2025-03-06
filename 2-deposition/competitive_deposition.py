@@ -9,7 +9,6 @@ max_height = 300
 
 surface = np.zeros(L)
 particle_colors = np.zeros((max_height, L), dtype=int)
-w_array = np.zeros(N)
 
 
 def add_particle(position, color_value):
@@ -33,13 +32,6 @@ def add_particle(position, color_value):
         height -= 1
 
 
-def calculate_width():
-    mean_height = np.mean(surface)
-    mean_height_squared = np.mean(surface**2)
-    w = (mean_height_squared - mean_height**2) ** 0.5
-    return w
-
-
 for i in range(N):
     if max(surface) >= max_height:
         break
@@ -51,7 +43,6 @@ for i in range(N):
         color = 2  # Light blue
 
     add_particle(random_position, color)
-    w_array[i] = calculate_width()
 
 
 colors = ["white", "blue", "skyblue"]

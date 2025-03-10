@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-L = 10
+L = 50
+p = 0.5
 
 grid = np.zeros((L, L))
 
@@ -13,7 +14,7 @@ def turn_on(grid, p):
     return grid
 
 
-gird_on = turn_on(grid, 0.5)
+gird_on = turn_on(grid, p)
 
 
 plt.figure(figsize=(6, 6))
@@ -27,4 +28,7 @@ ax = plt.gca()
 ax.set_xticks(np.arange(-0.5, L, 1), minor=True)
 ax.set_yticks(np.arange(-0.5, L, 1), minor=True)
 ax.grid(which="minor", color="white", linestyle="-", linewidth=0.5)
+plt.xticks([])
+plt.yticks([])
+plt.title(f"Percolation Model (L={L}, p={p})")
 plt.show()

@@ -20,21 +20,18 @@ def turn_on(grid, p):
     return grid
 
 
-def get_direct_neighbors(grid, i, j):
-    neighbors = []
-    # Up
-    if i > 0:
-        neighbors.append((i - 1, j))
-    # Down
-    if i < grid.shape[0] - 1:
-        neighbors.append((i + 1, j))
-    # Left
-    if j > 0:
-        neighbors.append((i, j - 1))
-    # Right
-    if j < grid.shape[1] - 1:
-        neighbors.append((i, j + 1))
+
+def get_neighbors(grid, i, j):
+    neighbors = {}
+    for di in [-1, 0, 1]:
+        for dj in [-1, 0, 1]:
+            if di == 0 and dj == 0:
+                continue  # Skip the current cell
+            ni, nj = i + di, j + dj
+            if 0 <= ni < grid.shape[0] and 0 <= nj < grid.shape[1]:
+                neighbors[(ni, nj)] = grid[ni, nj]
     return neighbors
+
 
 
 random_values = np.random.random((L, L))
@@ -44,6 +41,12 @@ for i in range(grid.shape[0]):
         if random_values[i, j] < p:
             grid[i, j] = color
             color += 1
+            
+            neighbors = get_neighbors(grid, i, j)
+            # print(neighbors)
+
+a = get_neighbors(grid, 0, 0)
+print(a)
 
 
 plt.figure(figsize=(6, 6))

@@ -1,21 +1,25 @@
-# 3-percolation/percolation.py
-import matplotlib.pyplot as plt
 import numpy as np
-
+import matplotlib.pyplot as plt
 L = 10
 
-def plot_grid(L):
-    grid = np.zeros((L, L))
+grid = np.zeros((L, L))
+grid[0, :] = 1
 
-    fig, ax = plt.subplots()
-    ax.set_xticks(np.arange(-0.5, L, 1))
-    ax.set_yticks(np.arange(-0.5, L, 1))
-    ax.grid(True, which='both', color='black', linewidth=1)
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.imshow(grid, cmap='Greys', extent=[-0.5, L-0.5, -0.5, L-0.5])
+plt.figure(figsize=(6, 6))
+colors = ['red', 'blue']
+colors_with_alpha = [(1, 0, 0, 0.7), (0, 0, 1, 0.7)]  
+cmap = plt.matplotlib.colors.ListedColormap(colors_with_alpha)
+plt.imshow(grid, cmap=cmap, vmin=0, vmax=1)
+plt.clim(-0.5, 1.5)
+plt.grid(False)  
+ax = plt.gca()
+ax.set_xticks(np.arange(-.5, L, 1), minor=True)
+ax.set_yticks(np.arange(-.5, L, 1), minor=True)
+ax.grid(which='minor', color='white', linestyle='-', linewidth=0.5)
+plt.show()
 
-    plt.show()
 
-# Example usage:
-plot_grid(L)
+
+
+
+

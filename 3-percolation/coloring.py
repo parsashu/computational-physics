@@ -7,55 +7,66 @@ L = 50
 p = 0.5
 int_max = 1000
 color = 2
+color_min = 0
 
 grid = np.zeros((L, L))
 grid[:, 0] = 1
 grid[:, -1] = int_max
 
-
-def turn_on(grid, p):
-    """Open sites with probability p"""
-    random_values = np.random.random((L, L))
-    grid = np.where(random_values < p, 1, 0)
-    return grid
-
+random_values = np.random.random((L, L))
+color_change_list = []
 
 
 def get_neighbors(grid, i, j):
     neighbors = {}
-    for di in [-1, 0, 1]:
-        for dj in [-1, 0, 1]:
-            if di == 0 and dj == 0:
-                continue  # Skip the current cell
-            ni, nj = i + di, j + dj
-            if 0 <= ni < grid.shape[0] and 0 <= nj < grid.shape[1]:
-                neighbors[(ni, nj)] = grid[ni, nj]
+
+    # Up
+    if i > 0:
+        neighbors[i - 1, j] = grid[i - 1, j]
+    # Down
+    if i < grid.shape[0] - 1:
+        neighbors[i + 1, j] = grid[i + 1, j]
+    # Left
+    if j > 0:
+        neighbors[i, j - 1] = grid[i, j - 1]
+    # Right
+    if j < grid.shape[1] - 1:
+        neighbors[i, j + 1] = grid[i, j + 1]
     return neighbors
 
 
+def are_all_neighbors_zero(neighbors):
+    for ni, nj in neighbors:
+        if grid[ni, nj] != 0:
+            return False
+    return True
 
-random_values = np.random.random((L, L))
 
 for i in range(grid.shape[0]):
     for j in range(grid.shape[1]):
         if random_values[i, j] < p:
             grid[i, j] = color
             color += 1
-            
-            neighbors = get_neighbors(grid, i, j)
-            # print(neighbors)
 
-a = get_neighbors(grid, 0, 0)
-print(a)
+            neighbors = get_neighbors(grid, i, j)
+            if not are_all_neighbors_zero(neighbors):
+                non_zero_values = [value for value in neighbors.values() if value != 0]
+                if len(non_zero_values) == 1:
+                    grid[i, j] = non_zero_values[0]
+                else:
+                    color_min = min(non_zero_values)
+                    grid[i, j] = color_min
+                    color_change_list.append(color_min)
+                    # Last box
 
 
 plt.figure(figsize=(6, 6))
-base_cmap = cm.get_cmap("tab20", 101)
+base_cmap = cm.get_cmap("plasma", 101)
 colors = [base_cmap(i) for i in range(101)]
 colors[0] = (0.3, 0.3, 0.3, 1.0)
 colors[1] = (0.3, 0.3, 0.3, 1.0)
 cmap = ListedColormap(colors)
-plt.imshow(grid, cmap=cmap, vmin=0, vmax=int_max)
+plt.imshow(grid, cmap=cmap, vmin=0, vmax=color)
 plt.colorbar(label="Value")
 plt.grid(False)
 ax = plt.gca()

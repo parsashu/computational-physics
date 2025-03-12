@@ -4,8 +4,8 @@ import matplotlib.cm as cm
 from matplotlib.colors import ListedColormap
 
 L = 50
-p = 0.5
-int_max = 1000
+p = 0.3
+int_max = 10000
 color = 2
 color_min = 0
 
@@ -61,13 +61,14 @@ for i in range(grid.shape[0]):
 
 
 plt.figure(figsize=(6, 6))
-base_cmap = cm.get_cmap("plasma", 101)
-colors = [base_cmap(i) for i in range(101)]
+colors = plt.cm.rainbow(np.linspace(0, 1, int(color)))
 colors[0] = (0.3, 0.3, 0.3, 1.0)
-colors[1] = (0.3, 0.3, 0.3, 1.0)
+colors[1] = (0, 0, 0, 1.0)
+colors[-1] = (0, 0, 0, 0)
 cmap = ListedColormap(colors)
-plt.imshow(grid, cmap=cmap, vmin=0, vmax=color)
-plt.colorbar(label="Value")
+
+plt.imshow(grid, cmap=cmap, vmin=0, vmax=color - 1)
+plt.colorbar(label="Cluster ID")
 plt.grid(False)
 ax = plt.gca()
 ax.set_xticks(np.arange(-0.5, L, 1), minor=True)
@@ -75,5 +76,5 @@ ax.set_yticks(np.arange(-0.5, L, 1), minor=True)
 ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
 plt.xticks([])
 plt.yticks([])
-plt.title(f"Percolation Model with Values 1-{int_max} (L={L}, p={p})")
+plt.title(f"Percolation Clusters (L={L}, p={p})")
 plt.show()

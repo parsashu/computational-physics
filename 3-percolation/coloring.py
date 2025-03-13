@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 from matplotlib.colors import ListedColormap
+import time
+
 
 L = 100
-p = 0.6
+p = 0.59
 int_max = 10000
 color = 2
 color_min = 0
@@ -38,6 +39,8 @@ def get_neighbors(grid, i, j):
     return neighbors
 
 
+start_time = time.time()
+
 for i in range(L):
     for j in range(L):
         color_change_list = []
@@ -62,6 +65,8 @@ for i in range(L):
                         if grid[i_, j_] in color_change_list:
                             grid[i_, j_] = color_min
 
+end_time = time.time()
+print(f"Runtime: {end_time - start_time:.2f} seconds")
 
 plt.figure(figsize=(6, 6))
 colors = plt.cm.rainbow(np.linspace(0, 1, int(color)))

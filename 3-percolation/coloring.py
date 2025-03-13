@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.colors import ListedColormap
 
-L = 10
-p = 0.5
+L = 100
+p = 0.6
 int_max = 10000
 color = 2
 color_min = 0
-np.random.seed(12)
+# np.random.seed(12)
 
 grid = np.zeros((L, L))
 grid[:, 0] = 1
@@ -21,51 +21,46 @@ def get_neighbors(grid, i, j):
     neighbors = {}
 
     # Up
-    if i > 0:
+    if i > 0 and grid[i - 1, j] != 0:
         neighbors[i - 1, j] = grid[i - 1, j]
+
     # Down
-    if i < grid.shape[0] - 1:
+    if i < grid.shape[0] - 1 and grid[i + 1, j] != 0:
         neighbors[i + 1, j] = grid[i + 1, j]
+
     # Left
-    if j > 0:
+    if j > 0 and grid[i, j - 1] != 0:
         neighbors[i, j - 1] = grid[i, j - 1]
+
     # Right
-    if j < grid.shape[1] - 1:
+    if j < grid.shape[1] - 1 and grid[i, j + 1] != 0:
         neighbors[i, j + 1] = grid[i, j + 1]
     return neighbors
-
-
-def are_all_neighbors_zero(neighbors):
-    for ni, nj in neighbors:
-        if grid[ni, nj] != 0:
-            return False
-    return True
 
 
 for i in range(L):
     for j in range(L):
         color_change_list = []
-        
+
         if random_values[i, j] < p and grid[i, j] == 0:
             grid[i, j] = color
             color += 1
 
             neighbors = get_neighbors(grid, i, j)
-            if not are_all_neighbors_zero(neighbors):
-                non_zero_values = [value for value in neighbors.values() if value != 0]
-                if len(non_zero_values) == 1:
-                    grid[i, j] = non_zero_values[0]
-                else:
-                    color_min = min(non_zero_values)
-                    grid[i, j] = color_min
-                    for value in list(neighbors.values()):
-                        if value != 0:
-                            color_change_list.append(value)
-                    
-                    for i_ in range(i):
-                        for j_ in range(j):
-                            if grid[i_, j_] in color_change_list:
-                                grid[i_, j_] = color_min
+            if len(neighbors) == 1:
+                grid[i, j] = list(neighbors.values())[0]
+
+            elif len(neighbors) > 1:
+                color_min = min(list(neighbors.values()))
+                grid[i, j] = color_min
+                for value in list(neighbors.values()):
+                    if value != color_min:
+                        color_change_list.append(value)
+
+                for i_ in range(L):
+                    for j_ in range(L):
+                        if grid[i_, j_] in color_change_list:
+                            grid[i_, j_] = color_min
 
 
 plt.figure(figsize=(6, 6))

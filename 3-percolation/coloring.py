@@ -48,49 +48,58 @@ def is_percolating():
 
 start_time = time.time()
 
-for i in range(L):
-    for j in range(L):
-        color_change_list = []
+def coloring(grid, random_values, p):
+    global color
 
-        if random_values[i, j] < p and grid[i, j] == 0:
-            grid[i, j] = color
-            color += 1
+    for i in range(L):
+        for j in range(L):
+            color_change_list = []
 
-            neighbors = get_neighbors(grid, i, j)
-            if len(neighbors) == 1:
-                grid[i, j] = list(neighbors.values())[0]
+            if random_values[i, j] < p and grid[i, j] == 0:
+                grid[i, j] = color
+                color += 1
 
-            elif len(neighbors) > 1:
-                color_min = min(list(neighbors.values()))
-                grid[i, j] = color_min
-                for value in list(neighbors.values()):
-                    if value != color_min:
-                        color_change_list.append(value)
+                neighbors = get_neighbors(grid, i, j)
+                if len(neighbors) == 1:
+                    grid[i, j] = list(neighbors.values())[0]
 
-                for i_ in range(L):
-                    for j_ in range(L):
-                        if grid[i_, j_] in color_change_list:
-                            grid[i_, j_] = color_min
+                elif len(neighbors) > 1:
+                    color_min = min(list(neighbors.values()))
+                    grid[i, j] = color_min
+                    for value in list(neighbors.values()):
+                        if value != color_min:
+                            color_change_list.append(value)
 
-percolates = is_percolating()
-end_time = time.time()
-print(f"Runtime: {end_time - start_time:.2f} seconds")
+                    for i_ in range(L):
+                        for j_ in range(L):
+                            if grid[i_, j_] in color_change_list:
+                                grid[i_, j_] = color_min
+    return is_percolating()
 
-plt.figure(figsize=(6, 6))
-colors = plt.cm.rainbow(np.linspace(0, 1, int(color)))
-colors[0] = (0.3, 0.3, 0.3, 1.0)
-colors[-1] = (0, 0, 0, 1.0)
-colors[1] = (0, 0, 0, 0)
-cmap = ListedColormap(colors)
 
-plt.imshow(grid, cmap=cmap, vmin=0, vmax=color - 1)
-plt.colorbar(label="Cluster ID")
-plt.grid(False)
-ax = plt.gca()
-ax.set_xticks(np.arange(-0.5, L, 1), minor=True)
-ax.set_yticks(np.arange(-0.5, L, 1), minor=True)
-ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
-plt.xticks([])
-plt.yticks([])
-plt.title(f"Percolation Clusters (L={L}, p={p}, Percolates={percolates})")
-plt.show()
+def plot():
+    percolates = coloring(grid, random_values, p)
+    end_time = time.time()
+    print(f"Runtime: {end_time - start_time:.2f} seconds")
+
+    plt.figure(figsize=(6, 6))
+    colors = plt.cm.rainbow(np.linspace(0, 1, int(color)))
+    colors[0] = (0.3, 0.3, 0.3, 1.0)
+    colors[-1] = (0, 0, 0, 1.0)
+    colors[1] = (0, 0, 0, 0)
+    cmap = ListedColormap(colors)
+
+    plt.imshow(grid, cmap=cmap, vmin=0, vmax=color - 1)
+    plt.colorbar(label="Cluster ID")
+    plt.grid(False)
+    ax = plt.gca()
+    ax.set_xticks(np.arange(-0.5, L, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, L, 1), minor=True)
+    ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.title(f"Percolation Clusters (L={L}, p={p}, Percolates={percolates})")
+    plt.show()
+    
+# plot()
+    

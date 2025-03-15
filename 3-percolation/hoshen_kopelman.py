@@ -8,7 +8,7 @@ p = 0.59
 k = 2
 L = {1: 1}
 S = {1: length}
-np.random.seed(12)
+# np.random.seed(12)
 
 grid = np.zeros((length, length))
 grid[:, 0] = 1
@@ -36,9 +36,9 @@ def root(label):
     if label not in L:
         L[label] = label
         return label
-    
+
     if L[label] != label:
-        L[label] = root(L[label]) 
+        L[label] = root(L[label])
     return L[label]
 
 
@@ -53,36 +53,41 @@ def is_percolating():
 
 start_time = time.time()
 
-for j in range(length):
-    for i in range(length):
-        if random_values[i, j] < p and grid[i, j] == 0:
-            neighbors_k = get_up_left_neighbors(grid, i, j)
 
-            if len(neighbors_k) == 0:
-                grid[i, j] = k
-                L[k] = k
-                S[k] = 1
-                k += 1
+def hoshen_kopelman(grid, random_values, p):
+    global k, L, S
 
-            elif len(neighbors_k) == 1:
-                k_neighbor = int(neighbors_k[0])
-                grid[i, j] = k_neighbor
-                S[k_neighbor] += 1
+    for j in range(length):
+        for i in range(length):
+            if random_values[i, j] < p and grid[i, j] == 0:
+                neighbors_k = get_up_left_neighbors(grid, i, j)
 
-            else:
-                k_up = int(neighbors_k[0])
-                k_left = int(neighbors_k[1])
-                if k_up != k_left:
-                    grid[i, j] = k_left
-                    L[root(k_up)] = root(k_left)
-                    S[k_left] += S[k_up] + 1
-                    S[k_up] = 0
+                if len(neighbors_k) == 0:
+                    grid[i, j] = k
+                    L[k] = k
+                    S[k] = 1
+                    k += 1
+
+                elif len(neighbors_k) == 1:
+                    k_neighbor = int(neighbors_k[0])
+                    grid[i, j] = k_neighbor
+                    S[k_neighbor] += 1
+
                 else:
-                    grid[i, j] = k_left
-                    S[k_left] += 1
+                    k_up = int(neighbors_k[0])
+                    k_left = int(neighbors_k[1])
+                    if k_up != k_left:
+                        grid[i, j] = k_left
+                        L[root(k_up)] = root(k_left)
+                        S[k_left] += S[k_up] + 1
+                        S[k_up] = 0
+                    else:
+                        grid[i, j] = k_left
+                        S[k_left] += 1
+    return is_percolating()
 
 
-percolates = is_percolating()
+percolates = hoshen_kopelman(grid, random_values, p)
 end_time = time.time()
 print(f"Runtime: {end_time - start_time:.3f} seconds")
 
@@ -97,20 +102,25 @@ def merge_clusters():
 
 merge_clusters()
 
-plt.figure(figsize=(6, 6))
-colors = plt.cm.rainbow(np.linspace(0, 1, int(k)))
-colors[0] = (0.3, 0.3, 0.3, 1.0)
-colors[1] = (0, 0, 0, 0)
-cmap = ListedColormap(colors)
 
-plt.imshow(grid, cmap=cmap, vmin=0, vmax=k - 1)
-plt.colorbar(label="Cluster ID")
-plt.grid(False)
-ax = plt.gca()
-ax.set_xticks(np.arange(-0.5, length, 1), minor=True)
-ax.set_yticks(np.arange(-0.5, length, 1), minor=True)
-ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
-plt.xticks([])
-plt.yticks([])
-plt.title(f"Percolation Clusters (L={length}, p={p}, Percolates={percolates})")
-plt.show()
+def plot():
+    plt.figure(figsize=(6, 6))
+    colors = plt.cm.rainbow(np.linspace(0, 1, int(k)))
+    colors[0] = (0.3, 0.3, 0.3, 1.0)
+    colors[1] = (0, 0, 0, 0)
+    cmap = ListedColormap(colors)
+
+    plt.imshow(grid, cmap=cmap, vmin=0, vmax=k - 1)
+    plt.colorbar(label="Cluster ID")
+    plt.grid(False)
+    ax = plt.gca()
+    ax.set_xticks(np.arange(-0.5, length, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, length, 1), minor=True)
+    ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
+    plt.xticks([])
+    plt.yticks([])
+    plt.title(f"Percolation Clusters (L={length}, p={p}, Percolates={percolates})")
+    plt.show()
+    
+# plot()
+

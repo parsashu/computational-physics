@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import time
 
-length = 100
-p = 0.7
+length = 20
+p = 0.5
 k = 2
-L = {}
+L = {1: 1}
 S = {1: length}
-np.random.seed(12)
+np.random.seed(11)
 
 grid = np.zeros((length, length))
 grid[:, 0] = 1
@@ -38,16 +38,17 @@ def root(label):
 
     while label != L[label]:
         label = L[label]
+        print(label)
+        print(L[label])
+        print(label != L[label])
     return label
 
 
 def is_percolating():
     """Check if the cluster percolates"""
-    left_root = root(1)
-
     for cell in grid[:, -1]:
         if cell != 0:
-            if L[int(cell)] == left_root:
+            if root(int(cell)) == root(1):
                 return True
     return False
 

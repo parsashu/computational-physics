@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import time
 
-length = 10
-p = 0.5
+length = 100
+p = 0.59
 k = 2
 L = {1: 1}
 S = {1: length}
@@ -32,13 +32,14 @@ def get_up_left_neighbors(grid, i, j):
 
 
 def root(label):
-    """Find the root of the label"""
+    """Find the root of the label with path compression"""
     if label not in L:
         L[label] = label
-
-    while label != L[label]:
-        label = L[label]
-    return label
+        return label
+    
+    if L[label] != label:
+        L[label] = root(L[label]) 
+    return L[label]
 
 
 def is_percolating():
@@ -87,7 +88,7 @@ print(f"Runtime: {end_time - start_time:.3f} seconds")
 
 
 def merge_clusters():
-    """Plot the clusters with the same root as same color (not efficient in high lenghts)"""
+    """Plot the clusters with the same root as same color"""
     for i in range(length):
         for j in range(length):
             if grid[i, j] > 0:

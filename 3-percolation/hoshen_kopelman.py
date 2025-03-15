@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import time
 
-length = 20
+length = 10
 p = 0.5
 k = 2
 L = {1: 1}
 S = {1: length}
-np.random.seed(11)
+np.random.seed(12)
 
 grid = np.zeros((length, length))
 grid[:, 0] = 1
@@ -38,9 +38,6 @@ def root(label):
 
     while label != L[label]:
         label = L[label]
-        print(label)
-        print(L[label])
-        print(label != L[label])
     return label
 
 
@@ -76,7 +73,7 @@ for j in range(length):
                 k_left = int(neighbors_k[1])
                 if k_up != k_left:
                     grid[i, j] = k_left
-                    L[k_up] = k_left
+                    L[root(k_up)] = root(k_left)
                     S[k_left] += S[k_up] + 1
                     S[k_up] = 0
                 else:
@@ -97,7 +94,7 @@ def merge_clusters():
                 grid[i, j] = root(int(grid[i, j]))
 
 
-# merge_clusters()
+merge_clusters()
 
 plt.figure(figsize=(6, 6))
 colors = plt.cm.rainbow(np.linspace(0, 1, int(k)))

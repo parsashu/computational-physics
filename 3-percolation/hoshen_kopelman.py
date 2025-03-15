@@ -1,9 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+import time
 
-length = 50
-p = 0.6
+length = 100
+p = 0.7
 k = 2
 L = {}
 S = {1: length}
@@ -16,6 +17,7 @@ random_values = np.random.random((length, length))
 
 
 def get_up_left_neighbors(grid, i, j):
+    """Get the up and left neighbors of the cell"""
     neighbors_k = []
 
     # Up
@@ -28,6 +30,29 @@ def get_up_left_neighbors(grid, i, j):
 
     return neighbors_k
 
+
+def root(label):
+    """Find the root of the label"""
+    if label not in L:
+        L[label] = label
+
+    while label != L[label]:
+        label = L[label]
+    return label
+
+
+def is_percolating():
+    """Check if the cluster percolates"""
+    left_root = root(1)
+
+    for cell in grid[:, -1]:
+        if cell != 0:
+            if L[int(cell)] == left_root:
+                return True
+    return False
+
+
+start_time = time.time()
 
 for j in range(length):
     for i in range(length):
@@ -58,32 +83,20 @@ for j in range(length):
                     S[k_left] += 1
 
 
-def root(label):
-    if label not in L:
-        L[label] = label
-
-    while label != L[label]:
-        label = L[label]
-    return label
-
-
-for i in range(length):
-    for j in range(length):
-        if grid[i, j] > 0:
-            grid[i, j] = root(int(grid[i, j]))
-
-
-def is_percolating():
-    left_root = root(1)
-
-    for cell in grid[:, -1]:
-        if cell != 0:
-            if L[int(cell)] == left_root:
-                return True
-    return False
-
-
 percolates = is_percolating()
+end_time = time.time()
+print(f"Runtime: {end_time - start_time:.3f} seconds")
+
+
+def merge_clusters():
+    """Plot the clusters with the same root as same color (not efficient in high lenghts)"""
+    for i in range(length):
+        for j in range(length):
+            if grid[i, j] > 0:
+                grid[i, j] = root(int(grid[i, j]))
+
+
+# merge_clusters()
 
 plt.figure(figsize=(6, 6))
 colors = plt.cm.rainbow(np.linspace(0, 1, int(k)))

@@ -19,6 +19,7 @@ random_values = np.random.random((L, L))
 
 
 def get_neighbors(grid, i, j):
+    """Get the up, down, left and right neighbors of the cell"""
     neighbors = {}
 
     # Up
@@ -37,6 +38,12 @@ def get_neighbors(grid, i, j):
     if j < grid.shape[1] - 1 and grid[i, j + 1] != 0:
         neighbors[i, j + 1] = grid[i, j + 1]
     return neighbors
+
+def is_percolating():
+    """Check if the cluster percolates"""
+    if grid[0, -1] == 1:
+        return True
+    return False
 
 
 start_time = time.time()
@@ -65,6 +72,7 @@ for i in range(L):
                         if grid[i_, j_] in color_change_list:
                             grid[i_, j_] = color_min
 
+percolates = is_percolating()
 end_time = time.time()
 print(f"Runtime: {end_time - start_time:.2f} seconds")
 
@@ -84,5 +92,5 @@ ax.set_yticks(np.arange(-0.5, L, 1), minor=True)
 ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
 plt.xticks([])
 plt.yticks([])
-plt.title(f"Percolation Clusters (L={L}, p={p})")
+plt.title(f"Percolation Clusters (L={L}, p={p}, Percolates={percolates})")
 plt.show()

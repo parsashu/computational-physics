@@ -115,7 +115,7 @@ def is_connected_to_infinite_cluster_hoshen(grid):
 
 def center_of_mass(grid, k):
     """Calculate the center of mass"""
-    center_of_mass = np.array([0, 0])
+    center_of_mass = np.array([0.0, 0.0])
 
     for i in range(grid.shape[0]):
         for j in range(grid.shape[1]):
@@ -123,8 +123,8 @@ def center_of_mass(grid, k):
             if grid[i, j] != 0 and root(int(grid[i, j])) == root(k):
                 center_of_mass += np.array([i, j])
 
-    center_of_mass //= S[root(k)]
-    return center_of_mass
+    center_of_mass /= S[root(k)]
+    return np.round(center_of_mass)
 
 
 def Rg(grid, k):
@@ -137,7 +137,7 @@ def Rg(grid, k):
             if grid[i, j] != 0 and root(int(grid[i, j])) == root(k):
                 Rg += np.linalg.norm(np.array([i, j]) - r_cm) ** 2
 
-    Rg = (Rg // S[root(k)]) ** 0.5
+    Rg = (Rg / S[root(k)]) ** 0.5
     return Rg
 
 
@@ -165,10 +165,7 @@ def plot(length, p):
     plt.yticks([])
     plt.title(f"Percolation Clusters (L={length}, p={p}, Percolates={percolates})")
     plt.show()
-
-
-# np.random.seed(9)
-# plot(length=10, p=0.45)
-
+    
+    
 np.random.seed(12)
 plot(length=10, p=0.45)

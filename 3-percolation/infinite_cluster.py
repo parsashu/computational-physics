@@ -46,14 +46,14 @@ while p <= 1:
 
 p_values = [i * 0.05 for i in range(20)]
 
-# plt.figure(figsize=(10, 6))
-# plt.plot(p_values, Q_color, "o-", label="Coloring Algorithm")
-# plt.plot(p_values, Q_hoshen, "s-", label="Hoshen-Kopelman Algorithm")
-# plt.xlabel("Occupation Probability (p)")
-# plt.ylabel("Percolation Probability (q)")
-# plt.title(f"Percolation Probability vs Occupation Probability (L={length})")
-# plt.legend()
-# plt.show()
+plt.figure(figsize=(10, 6))
+plt.plot(p_values, Q_color, "o-", label="Coloring Algorithm")
+plt.plot(p_values, Q_hoshen, "s-", label="Hoshen-Kopelman Algorithm")
+plt.xlabel("Occupation Probability (p)")
+plt.ylabel("Percolation Probability (q)")
+plt.title(f"Percolation Probability vs Occupation Probability (L={length})")
+plt.legend()
+plt.show()
 
 plt.figure(figsize=(10, 6))
 plt.plot(p_values, Q_inf_color, "o-", label="Coloring Algorithm")

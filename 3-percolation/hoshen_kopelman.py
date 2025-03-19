@@ -4,9 +4,6 @@ from matplotlib.colors import ListedColormap
 import time
 
 
-# np.random.seed(12)
-
-
 def get_up_left_neighbors(grid, i, j):
     """Get the up and left neighbors of the cell"""
     neighbors_k = []
@@ -80,7 +77,7 @@ def hoshen_kopelman(length, random_values, p):
                 elif len(neighbors_k) == 1:
                     k_neighbor = int(neighbors_k[0])
                     grid[i, j] = k_neighbor
-                    S[k_neighbor] += 1
+                    S[root(k_neighbor)] += 1
 
                 else:
                     k_up = int(neighbors_k[0])
@@ -88,13 +85,17 @@ def hoshen_kopelman(length, random_values, p):
                     if k_up != k_left:
                         grid[i, j] = k_left
                         L[root(k_up)] = root(k_left)
-                        S[k_left] += S[k_up] + 1
+                        S[root(k_left)] += S[k_up] + 1
                         S[k_up] = 0
                     else:
                         grid[i, j] = k_left
                         S[k_left] += 1
-
-    return merge_clusters(grid), is_percolating(grid)
+                        
+    # grid = merge_clusters(grid)
+    print(Rg(grid, 3))
+    print(center_of_mass(grid, 3))
+    print(S[3])
+    return grid, is_percolating(grid)
 
 
 def is_connected_to_infinite_cluster_hoshen(grid):
@@ -108,6 +109,34 @@ def is_connected_to_infinite_cluster_hoshen(grid):
     if root(int(grid[i, j])) == root(1) and is_percolating(grid):
         return True
     return False
+
+
+def center_of_mass(grid, k):
+    """Calculate the center of mass"""
+    center_of_mass = np.array([0, 0])
+
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+
+            if grid[i, j] != 0 and root(int(grid[i, j])) == root(k):
+                center_of_mass += np.array([i, j])
+
+    center_of_mass //= S[root(k)]
+    return center_of_mass
+
+
+def Rg(grid, k):
+    """Calculate the radius of gyration"""
+    r_cm = center_of_mass(grid, k)
+    Rg = 0
+
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            if grid[i, j] != 0 and root(int(grid[i, j])) == root(k):
+                Rg += np.linalg.norm(np.array([i, j]) - r_cm) ** 2
+
+    Rg = (Rg // S[root(k)]) ** 0.5
+    return Rg
 
 
 def plot(length, p):
@@ -136,4 +165,5 @@ def plot(length, p):
     plt.show()
 
 
-# plot(length=100, p=0.59)
+np.random.seed(9)
+plot(length=10, p=0.45)

@@ -84,7 +84,7 @@ def is_connected_to_infinite_cluster_color(grid):
         if grid[i, j] != 0:
             break
 
-    if grid[i, j] == 1:
+    if grid[i, j] == 1 and is_percolating(grid):
         return True
     return False
 

@@ -105,7 +105,7 @@ def is_connected_to_infinite_cluster_hoshen(grid):
         if grid[i, j] != 0:
             break
 
-    if root(int(grid[i, j])) == root(1):
+    if root(int(grid[i, j])) == root(1) and is_percolating(grid):
         return True
     return False
 

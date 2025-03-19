@@ -25,7 +25,7 @@ def get_up_left_neighbors(grid, i, j):
 def root(label):
     """Find the root of the label with path compression"""
     global L
-    
+
     if label not in L:
         L[label] = label
         return label
@@ -95,6 +95,19 @@ def hoshen_kopelman(length, random_values, p):
                         S[k_left] += 1
 
     return merge_clusters(grid), is_percolating(grid)
+
+
+def is_connected_to_infinite_cluster_hoshen(grid):
+    """Calculate if a random point is connected to the infinite cluster"""
+    while True:
+        i = np.random.randint(0, grid.shape[0])
+        j = np.random.randint(0, grid.shape[1])
+        if grid[i, j] != 0:
+            break
+
+    if root(int(grid[i, j])) == root(1):
+        return True
+    return False
 
 
 def plot(length, p):

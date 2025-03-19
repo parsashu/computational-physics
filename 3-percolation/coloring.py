@@ -76,6 +76,19 @@ def coloring(length, random_values, p):
     return grid, is_percolating(grid)
 
 
+def is_connected_to_infinite_cluster_color(grid):
+    """Calculate if a random point is connected to the infinite cluster"""
+    while True:
+        i = np.random.randint(0, grid.shape[0])
+        j = np.random.randint(0, grid.shape[1])
+        if grid[i, j] != 0:
+            break
+
+    if grid[i, j] == 1:
+        return True
+    return False
+
+
 def plot(length, p):
     random_values = np.random.random((length, length))
 

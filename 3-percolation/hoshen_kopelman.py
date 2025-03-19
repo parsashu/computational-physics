@@ -3,17 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import time
 
-length = 100
-p = 0.59
-k = 2
-L = {1: 1}
-S = {1: length}
+
 # np.random.seed(12)
-
-grid = np.zeros((length, length))
-grid[:, 0] = 1
-
-random_values = np.random.random((length, length))
 
 
 def get_up_left_neighbors(grid, i, j):
@@ -33,6 +24,8 @@ def get_up_left_neighbors(grid, i, j):
 
 def root(label):
     """Find the root of the label with path compression"""
+    global L
+    
     if label not in L:
         L[label] = label
         return label
@@ -42,7 +35,7 @@ def root(label):
     return L[label]
 
 
-def is_percolating():
+def is_percolating(grid):
     """Check if the cluster percolates"""
     for cell in grid[:, -1]:
         if cell != 0:
@@ -51,14 +44,30 @@ def is_percolating():
     return False
 
 
+def merge_clusters(grid):
+    """Plot the clusters with the same root as same color"""
+    for i in range(grid.shape[0]):
+        for j in range(grid.shape[1]):
+            if grid[i, j] > 0:
+                grid[i, j] = root(int(grid[i, j]))
+    return grid
+
+
 start_time = time.time()
 
 
-def hoshen_kopelman(grid, random_values, p):
+def hoshen_kopelman(length, random_values, p):
     global k, L, S
 
-    for j in range(length):
-        for i in range(length):
+    k = 2
+    L = {1: 1}
+    S = {1: length}
+
+    grid = np.zeros((length, length))
+    grid[:, 0] = 1
+
+    for j in range(grid.shape[1]):
+        for i in range(grid.shape[0]):
             if random_values[i, j] < p and grid[i, j] == 0:
                 neighbors_k = get_up_left_neighbors(grid, i, j)
 
@@ -84,26 +93,17 @@ def hoshen_kopelman(grid, random_values, p):
                     else:
                         grid[i, j] = k_left
                         S[k_left] += 1
-    return is_percolating()
+
+    return merge_clusters(grid), is_percolating(grid)
 
 
-percolates = hoshen_kopelman(grid, random_values, p)
-end_time = time.time()
-print(f"Runtime: {end_time - start_time:.3f} seconds")
+def plot(length, p):
+    random_values = np.random.random((length, length))
+    grid, percolates = hoshen_kopelman(length, random_values, p)
 
+    end_time = time.time()
+    print(f"Runtime: {end_time - start_time:.3f} seconds")
 
-def merge_clusters():
-    """Plot the clusters with the same root as same color"""
-    for i in range(length):
-        for j in range(length):
-            if grid[i, j] > 0:
-                grid[i, j] = root(int(grid[i, j]))
-
-
-merge_clusters()
-
-
-def plot():
     plt.figure(figsize=(6, 6))
     colors = plt.cm.rainbow(np.linspace(0, 1, int(k)))
     colors[0] = (0.3, 0.3, 0.3, 1.0)
@@ -121,6 +121,6 @@ def plot():
     plt.yticks([])
     plt.title(f"Percolation Clusters (L={length}, p={p}, Percolates={percolates})")
     plt.show()
-    
-# plot()
 
+
+# plot(length=100, p=0.59)

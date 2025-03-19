@@ -47,6 +47,12 @@ def merge_clusters(grid):
         for j in range(grid.shape[1]):
             if grid[i, j] > 0:
                 grid[i, j] = root(int(grid[i, j]))
+
+    for key in S:
+        if root(key) != key:
+            S[root(key)] += S[key]
+            S[key] = 0
+
     return grid
 
 
@@ -77,7 +83,7 @@ def hoshen_kopelman(length, random_values, p):
                 elif len(neighbors_k) == 1:
                     k_neighbor = int(neighbors_k[0])
                     grid[i, j] = k_neighbor
-                    S[root(k_neighbor)] += 1
+                    S[k_neighbor] += 1
 
                 else:
                     k_up = int(neighbors_k[0])
@@ -85,16 +91,12 @@ def hoshen_kopelman(length, random_values, p):
                     if k_up != k_left:
                         grid[i, j] = k_left
                         L[root(k_up)] = root(k_left)
-                        S[root(k_left)] += S[k_up] + 1
-                        S[k_up] = 0
+                        S[k_left] += 1
                     else:
                         grid[i, j] = k_left
                         S[k_left] += 1
-                        
-    # grid = merge_clusters(grid)
-    print(Rg(grid, 3))
-    print(center_of_mass(grid, 3))
-    print(S[3])
+
+    grid = merge_clusters(grid)
     return grid, is_percolating(grid)
 
 
@@ -165,5 +167,8 @@ def plot(length, p):
     plt.show()
 
 
-np.random.seed(9)
+# np.random.seed(9)
+# plot(length=10, p=0.45)
+
+np.random.seed(12)
 plot(length=10, p=0.45)

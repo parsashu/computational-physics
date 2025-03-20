@@ -2,13 +2,13 @@ import numpy as np
 from hoshen_kopelman import hoshen_kopelman, correlation_length
 import matplotlib.pyplot as plt
 
-length = 10
+length = 160
 p = 0
-n_runs = 100
+n_runs = 10
 Xi_hoshen = []
 p_values = []
 
-while p < 0.48:
+while p < 0.35:
     delta_p = 0.02
     correlation_lengths = []
 
@@ -21,7 +21,7 @@ while p < 0.48:
     p_values.append(p)
     p += delta_p
 
-while p < 0.68:
+while p < 0.45:
     delta_p = 0.005
     correlation_lengths = []
 

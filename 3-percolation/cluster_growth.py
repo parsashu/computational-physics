@@ -76,8 +76,6 @@ def Xi(grid):
     return Rg
 
 
-
-
 def plot_grid(length, p):
     grid = cluster_growth(length, p)
     S = size_of_cluster(grid)
@@ -107,6 +105,38 @@ def plot_grid(length, p):
     plt.show()
 
 
+def plot_xi_vs_s(length, ensemble):
+    p_list = [0.5, 0.55, 0.59]
+    log_s = []
+    log_xi = []
+
+    for p in p_list:
+        s = []
+        xi = []
+
+        for _ in range(ensemble):
+            grid = cluster_growth(length, p)
+            s.append(size_of_cluster(grid))
+            xi.append(Xi(grid))
+
+        log_s.append(np.log(np.mean(s)))
+        log_xi.append(np.log(np.mean(xi)))
+
+    coeffs = np.polyfit(log_s, log_xi, 1)
+    a, b = coeffs[0], coeffs[1]
+    fit_line = [a * x + b for x in log_s]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(log_s, log_xi, "o", label="Cluster Growth")
+    plt.plot(log_s, fit_line, "-", label=f"Fit: ξ ~ S^{a:.2f}")
+    plt.xlabel("log(S)")
+    plt.ylabel("log(ξ)")
+    plt.title(f"Radius of Gyration vs Cluster Size\na={a:.2f}, b={b:.2f}")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
 # np.random.seed(12)
 # plot_grid(length=300, p=0.59)
-
+plot_xi_vs_s(length=200, ensemble=10)

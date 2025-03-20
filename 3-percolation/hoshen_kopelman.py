@@ -141,6 +141,20 @@ def Rg(grid, k):
     return Rg
 
 
+def correlation_length(grid):
+    """Calculate the correlation length"""
+    Rg_list = []
+
+    for key in S:
+        if S[key] != 0:
+            if is_percolating(grid):
+                if root(key) != root(1):
+                    Rg_list.append(Rg(grid, key))
+            Rg_list.append(Rg(grid, key))
+
+    return np.mean(Rg_list)
+
+
 def plot(length, p):
     random_values = np.random.random((length, length))
     grid, percolates = hoshen_kopelman(length, random_values, p)
@@ -165,7 +179,7 @@ def plot(length, p):
     plt.yticks([])
     plt.title(f"Percolation Clusters (L={length}, p={p}, Percolates={percolates})")
     plt.show()
-    
-    
-np.random.seed(12)
-plot(length=10, p=0.45)
+
+
+# np.random.seed(12)
+# plot(length=10, p=0.45)

@@ -97,6 +97,7 @@ def hoshen_kopelman(length, random_values, p):
                         S[k_left] += 1
 
     grid = merge_clusters(grid)
+    # print(correlation_length(grid))
     return grid, is_percolating(grid)
 
 
@@ -150,9 +151,15 @@ def correlation_length(grid):
             if is_percolating(grid):
                 if root(key) != root(1):
                     Rg_list.append(Rg(grid, key))
-            Rg_list.append(Rg(grid, key))
+            else:
+                Rg_list.append(Rg(grid, key))
+        else:
+            continue
 
-    return np.mean(Rg_list)
+    if len(Rg_list) == 0:
+        return 0.0
+
+    return np.sum(Rg_list)
 
 
 def plot(length, p):
@@ -182,4 +189,4 @@ def plot(length, p):
 
 
 # np.random.seed(12)
-# plot(length=10, p=0.45)
+# plot(length=10, p=0.8)

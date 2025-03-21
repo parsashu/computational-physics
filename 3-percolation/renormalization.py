@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-L = 50
+L = 10
 p = 0.5
 
 grid = np.zeros((L, L))
@@ -14,12 +14,27 @@ def turn_on(grid, p):
     return grid
 
 
+def renormalize_block(block):
+    """Apply renormalization rule to a 2x2 block based on examples"""
+    percolating_patterns = [
+        np.array([[0, 1], [1, 1]]),
+        np.array([[1, 0], [1, 1]]),
+        np.array([[1, 1], [0, 1]]),
+        np.array([[1, 1], [1, 0]]),
+        np.array([[1, 0], [1, 0]]),
+        np.array([[0, 1], [0, 1]]),
+        np.array([[1, 1], [1, 1]]),
+    ]
+
+    for pattern in percolating_patterns:
+        if np.array_equal(block, pattern):
+            return 1
+
+    return 0
+
+
 def renormalize(grid):
-    """
-    Renormalize the grid by applying the rule:
-    - If there's a path connecting top to bottom in a 2x2 block, the resulting cell is filled (1)
-    - Otherwise, the resulting cell is empty (0)
-    """
+    """Renormalize the grid by applying the rule based on pattern matching"""
     L_old = grid.shape[0]
     L_new = L_old // 2
     new_grid = np.zeros((L_new, L_new))
@@ -27,14 +42,7 @@ def renormalize(grid):
     for i in range(L_new):
         for j in range(L_new):
             block = grid[2 * i : 2 * i + 2, 2 * j : 2 * j + 2]
-
-            top_filled = np.any(block[0, :])
-            bottom_filled = np.any(block[1, :])
-            col0_filled = block[0, 0] and block[1, 0]
-            col1_filled = block[0, 1] and block[1, 1]
-
-            if (top_filled and bottom_filled) or col0_filled or col1_filled:
-                new_grid[i, j] = 1
+            new_grid[i, j] = renormalize_block(block)
 
     return new_grid
 
@@ -68,6 +76,5 @@ ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
 plt.xticks([])
 plt.yticks([])
 plt.title(f"Renormalized Grid (L={L//2})")
-
 plt.tight_layout()
 plt.show()

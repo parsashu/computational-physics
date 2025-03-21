@@ -63,11 +63,21 @@ def find_fixed_point(p_values):
         p_prime = probability(renormalized_grid)
         p_primes.append(p_prime)
 
-    differences = np.abs(p_values - p_primes)
-    fixed_point_idx = np.argmin(differences)
-    fixed_point = p_values[fixed_point_idx]
+    differences = p_values - p_primes
 
-    return fixed_point, p_values, p_primes
+    fixed_points = []
+    for i in range(len(differences) - 1):
+        if differences[i] * differences[i + 1] <= 0:
+            if differences[i] == differences[i + 1] == 0:
+                fixed_points.append((p_values[i] + p_values[i + 1]) / 2)
+            else:
+                t = abs(differences[i]) / (
+                    abs(differences[i]) + abs(differences[i + 1])
+                )
+                fixed_point = p_values[i] + t * (p_values[i + 1] - p_values[i])
+                fixed_points.append(fixed_point)
+
+    return fixed_points, p_values, p_primes
 
 
 grid_on = turn_on(grid, p)
@@ -75,22 +85,26 @@ renormalized_grid = renormalize(grid_on)
 p_prime = probability(renormalized_grid)
 
 p_values = np.linspace(0, 1, 10)
-fixed_point, all_p, all_p_prime = find_fixed_point(p_values)
+fixed_points, all_p, all_p_prime = find_fixed_point(p_values)
 
 plt.figure(figsize=(8, 6))
 plt.plot(all_p, all_p_prime, "b-", label="p'(p)")
 plt.plot(all_p, all_p, "r--", label="p = p'")
-plt.scatter(
-    [fixed_point],
-    [all_p_prime[np.argmin(np.abs(all_p - fixed_point))]],
-    color="green",
-    s=100,
-    label=f"Fixed point: p ≈ {fixed_point:.5f}",
-)
+
+for i, fp in enumerate(fixed_points):
+    idx = np.abs(all_p - fp).argmin()
+    plt.scatter(
+        [fp],
+        [all_p_prime[idx]],
+        color=["green", "orange", "purple"][i % 3],
+        s=100,
+        label=f"Fixed point {i+1}: p ≈ {fp:.5f}",
+    )
+
 plt.xlabel("p")
 plt.ylabel("p'")
 plt.legend()
-plt.title("Renormalization Flow: Finding Fixed Point")
+plt.title("Renormalization Flow: Finding Fixed Points")
 plt.grid(True)
 plt.show()
 

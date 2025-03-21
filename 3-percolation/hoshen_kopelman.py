@@ -97,7 +97,6 @@ def hoshen_kopelman(length, random_values, p):
                         S[k_left] += 1
 
     grid = merge_clusters(grid)
-    # print(correlation_length(grid))
     return grid, is_percolating(grid)
 
 

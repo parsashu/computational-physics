@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-L = 10
-p = 0.5
+L = 100
+p = 0.618
 
 grid = np.zeros((L, L))
 
@@ -47,8 +47,52 @@ def renormalize(grid):
     return new_grid
 
 
+def probability(grid):
+    """Calculate the probability of 1 in the grid"""
+    L = grid.shape[0]
+    return np.sum(grid) / (L * L)
+
+
+def find_fixed_point(p_values):
+    """Find the fixed point where p = p_prime"""
+    p_primes = []
+    for p in p_values:
+        grid = np.zeros((L, L))
+        grid_on = turn_on(grid, p)
+        renormalized_grid = renormalize(grid_on)
+        p_prime = probability(renormalized_grid)
+        p_primes.append(p_prime)
+
+    differences = np.abs(p_values - p_primes)
+    fixed_point_idx = np.argmin(differences)
+    fixed_point = p_values[fixed_point_idx]
+
+    return fixed_point, p_values, p_primes
+
+
 grid_on = turn_on(grid, p)
 renormalized_grid = renormalize(grid_on)
+p_prime = probability(renormalized_grid)
+
+p_values = np.linspace(0, 1, 10)
+fixed_point, all_p, all_p_prime = find_fixed_point(p_values)
+
+plt.figure(figsize=(8, 6))
+plt.plot(all_p, all_p_prime, "b-", label="p'(p)")
+plt.plot(all_p, all_p, "r--", label="p = p'")
+plt.scatter(
+    [fixed_point],
+    [all_p_prime[np.argmin(np.abs(all_p - fixed_point))]],
+    color="green",
+    s=100,
+    label=f"Fixed point: p ≈ {fixed_point:.5f}",
+)
+plt.xlabel("p")
+plt.ylabel("p'")
+plt.legend()
+plt.title("Renormalization Flow: Finding Fixed Point")
+plt.grid(True)
+plt.show()
 
 plt.figure(figsize=(12, 6))
 plt.subplot(1, 2, 1)
@@ -75,6 +119,6 @@ ax.set_yticks(np.arange(-0.5, L // 2, 1), minor=True)
 ax.grid(which="minor", color="white", linestyle="-", linewidth=0.1)
 plt.xticks([])
 plt.yticks([])
-plt.title(f"Renormalized Grid (L={L//2})")
+plt.title(f"Renormalized Grid (L={L//2}, p'={p_prime:.3f})")
 plt.tight_layout()
 plt.show()

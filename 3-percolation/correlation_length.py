@@ -2,9 +2,9 @@ import numpy as np
 from hoshen_kopelman import hoshen_kopelman, correlation_length
 import matplotlib.pyplot as plt
 
-length = 160
+length = 10
 p = 0
-n_runs = 1
+n_runs = 100
 Xi_hoshen = []
 p_values = []
 

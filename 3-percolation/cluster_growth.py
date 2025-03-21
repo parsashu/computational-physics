@@ -138,5 +138,5 @@ def plot_xi_vs_s(length, ensemble):
 
 
 # np.random.seed(12)
-# plot_grid(length=300, p=0.59)
+plot_grid(length=300, p=0.59)
 plot_xi_vs_s(length=200, ensemble=10)

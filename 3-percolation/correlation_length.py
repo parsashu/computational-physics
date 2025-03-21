@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 length = 160
 p = 0
-n_runs = 10
+n_runs = 1
 Xi_hoshen = []
 p_values = []
 

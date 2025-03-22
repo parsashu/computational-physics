@@ -1,8 +1,3 @@
-"""
-This script simulates a one-dimensional random walk and visualizes the path
-taken by a point starting at the origin and moving in random directions in 1D space.
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 

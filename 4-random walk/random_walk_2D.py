@@ -15,16 +15,16 @@ def random_walk_2D(steps):
         (0, -l),
     ]
 
-    x_positions = np.zeros(steps + 1)
-    y_positions = np.zeros(steps + 1)
+    x = np.zeros(steps + 1)
+    y = np.zeros(steps + 1)
 
     for i in range(1, steps + 1):
         dx, dy = random.choice(step_vectors)
 
-        x_positions[i] = x_positions[i - 1] + dx
-        y_positions[i] = y_positions[i - 1] + dy
+        x[i] = x[i - 1] + dx
+        y[i] = y[i - 1] + dy
 
-    return x_positions, y_positions
+    return x, y
 
 
 num_steps = 1000
@@ -43,9 +43,10 @@ plt.legend()
 plt.show()
 
 
-time_range = np.linspace(1, 1000, 100, dtype=int)
+# Plot r^2 vs time
+time_range = np.linspace(1, 1000, 20, dtype=int)
 r2_list = []
-num_ensemble = 100
+num_ensemble = 1000
 
 for time in time_range:
     ensemble_r2 = []
@@ -60,7 +61,7 @@ for time in time_range:
 
 
 def theoretical_r2(time):
-    return time * 4 * D
+    return time * 2 * D
 
 
 plt.figure(figsize=(10, 6))

@@ -7,12 +7,19 @@ q = 1 - p
 n_steps = 100
 x0 = 0
 delta_x = 1
+death_prob_threshold = 0.
 
 probability = np.zeros(23, dtype=np.float64)
 probability[x0 + 11] = 1.0
 probability_new = np.zeros(23, dtype=np.float64)
 
-for _ in range(n_steps):
+n_steps = 0
+right_trap_prob = 0
+left_trap_prob = 0
+
+while right_trap_prob + left_trap_prob < death_prob_threshold:
+    n_steps += 1
+    
     for i in range(len(probability)):
         if i == 0:
             probability_new[i] = q * probability[i + 1] + probability[i]
@@ -31,10 +38,10 @@ for _ in range(n_steps):
 
     probability = probability_new.copy()
     
-right_trap_probability = probability[-1]
-print(right_trap_probability)
-    
+    right_trap_prob = probability[-1]
+    left_trap_prob = probability[0]
 
+print(n_steps)
 
 positions = np.arange(-11, 12)
 probability = np.array(probability, dtype=np.float64).reshape(1, 23)

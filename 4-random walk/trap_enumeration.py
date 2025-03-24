@@ -44,11 +44,13 @@ def random_walk_until_threshold(death_prob_threshold, x0, p, q):
     return n_steps, probability, right_trap_prob, left_trap_prob
 
 
-death_prob_thresholds = np.linspace(0.1, 0.9, 9)
+death_prob_thresholds = np.linspace(0.1, 0.99, 50)
 steps_required = []
 
 for death_prob_threshold in death_prob_thresholds:
-    n_steps, _, _, _ = random_walk_until_threshold(death_prob_threshold, x0, p, q)
+    n_steps, probability, right_trap_prob, left_trap_prob = random_walk_until_threshold(
+        death_prob_threshold, x0, p, q
+    )
     steps_required.append(n_steps)
 
 plt.figure(figsize=(10, 6))
@@ -58,6 +60,31 @@ plt.ylabel("Number of Steps Required")
 plt.title(f"Steps Required to Reach Different Death Probability Thresholds (p={p})")
 plt.grid(True)
 plt.show()
+
+
+x0_values = np.linspace(-10, 10, 21).astype(int)
+right_trap_probs = []
+left_trap_probs = []
+
+for x0_value in x0_values:
+    n_steps, probability, right_trap_prob, left_trap_prob = random_walk_until_threshold(
+        death_prob_threshold, x0_value, p, q
+    )
+    right_trap_probs.append(right_trap_prob)
+    left_trap_probs.append(left_trap_prob)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x0_values, right_trap_probs, "ro-", label="Right Trap Probability")
+plt.plot(x0_values, left_trap_probs, "bo-", label="Left Trap Probability")
+plt.xlabel("Initial Position (x0)")
+plt.ylabel("Probability")
+plt.title(
+    f"Trap Probabilities vs Initial Position (p={p}, threshold={death_prob_threshold:.2f})"
+)
+plt.grid(True)
+plt.legend()
+plt.show()
+
 
 death_prob_threshold = 0.68
 n_steps, probability, right_trap_prob, left_trap_prob = random_walk_until_threshold(

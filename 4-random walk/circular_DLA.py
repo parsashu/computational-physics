@@ -6,13 +6,13 @@ import random
 N = 10000
 L = 500
 height = 500
-launch_height = 50
-kill_height = 100
-spawn_zone = kill_height - launch_height
-max_y = 1
+launch_radius = 10
+kill_radius = 20
+spawn_zone = kill_radius - launch_radius
+max_r = 1
 
 grid = np.zeros((height, L), dtype=int)
-grid[0, :] = 1
+grid[height // 2, L // 2] = 1
 
 
 def get_neighbors(grid, i, j):
@@ -47,12 +47,18 @@ def get_neighbors(grid, i, j):
 
 
 def add_particle(color_value):
-    global kill_height, launch_height, max_y
+    global kill_radius, launch_radius, max_r
     hit = False
 
     while not hit:
-        x = np.random.randint(0, L)
-        y = np.random.randint(launch_height, kill_height)
+        theta = np.random.uniform(0, 2 * np.pi)
+        r0 = np.random.randint(launch_radius, kill_radius)
+
+        center_x = L // 2
+        center_y = height // 2
+
+        x = int(center_x + r0 * np.cos(theta))
+        y = int(center_y + r0 * np.sin(theta))
 
         step_vectors = [
             (1, 0),
@@ -67,14 +73,9 @@ def add_particle(color_value):
             x += dx
             y += dy
 
-            # Wrap boundaries
-            if x >= L:
-                x = 0
-            elif x < 0:
-                x = L - 1
-
             # Check if the particle has hit the kill zone
-            if y >= kill_height:
+            r = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+            if r >= kill_radius:
                 break
 
             # Check if it has hit a neighbor
@@ -83,12 +84,15 @@ def add_particle(color_value):
                 hit = True
                 grid[y, x] = color_value
 
-                if y > max_y:
-                    max_y = y
-                    kill_height = min(height - 1, 1 + kill_height)
-                    launch_height = min(height - spawn_zone, 1 + launch_height)
-                    print(max_y, kill_height, launch_height)
-
+                if r > max_r:
+                    delta_r = r - max_r
+                    max_r = r
+                    kill_radius = min(height // 2, L // 2, kill_radius + delta_r)
+                    launch_radius = min(
+                        height // 2 - spawn_zone,
+                        L // 2 - spawn_zone,
+                        launch_radius + delta_r,
+                    )
                 break
 
 

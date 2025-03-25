@@ -3,16 +3,23 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import random
 
-N = 10000
+N = 1000
 L = 500
 height = 500
-launch_height = 50
-kill_height = 100
-spawn_zone = kill_height - launch_height
+
+launch_x = 10
+launch_y = 10
+kill_x = 30
+kill_y = 30
+
+spawn_zone_x = kill_x - launch_x
+spawn_zone_y = kill_y - launch_y
+
+max_x = 1
 max_y = 1
 
 grid = np.zeros((height, L), dtype=int)
-grid[0, :] = 1
+grid[height // 2, L // 2] = 1
 
 
 def get_neighbors(grid, i, j):
@@ -47,12 +54,12 @@ def get_neighbors(grid, i, j):
 
 
 def add_particle(color_value):
-    global kill_height, launch_height, max_y
+    global kill_x, kill_y, launch_x, launch_y, max_x, max_y
     hit = False
 
     while not hit:
-        x = np.random.randint(0, L)
-        y = np.random.randint(launch_height, kill_height)
+        x = np.random.randint(launch_x, kill_x)
+        y = np.random.randint(launch_y, kill_y)
 
         step_vectors = [
             (1, 0),
@@ -67,14 +74,9 @@ def add_particle(color_value):
             x += dx
             y += dy
 
-            # Wrap boundaries
-            if x >= L:
-                x = 0
-            elif x < 0:
-                x = L - 1
-
             # Check if the particle has hit the kill zone
-            if y >= kill_height:
+            r = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
+            if r >= kill_x:
                 break
 
             # Check if it has hit a neighbor
@@ -83,12 +85,15 @@ def add_particle(color_value):
                 hit = True
                 grid[y, x] = color_value
 
-                if y > max_y:
-                    max_y = y
-                    kill_height = min(height - 1, 1 + kill_height)
-                    launch_height = min(height - spawn_zone, 1 + launch_height)
-                    print(max_y, kill_height, launch_height)
-
+                if r > max_r:
+                    delta_r = r - max_r
+                    max_r = r
+                    kill_x = min(height // 2, L // 2, kill_x + delta_r)
+                    launch_radius = min(
+                        height // 2 - spawn_zone,
+                        L // 2 - spawn_zone,
+                        launch_radius + delta_r,
+                    )
                 break
 
 

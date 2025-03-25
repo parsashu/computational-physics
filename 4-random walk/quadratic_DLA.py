@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import random
 
-N = 1000
-L = 500
-height = 500
+N = 10000
+L = 1000
+height = 1000
 
 launch_x = 10
 launch_y = 10
@@ -19,7 +19,9 @@ max_x = 1
 max_y = 1
 
 grid = np.zeros((height, L), dtype=int)
-grid[height // 2, L // 2] = 1
+center_x = L // 2
+center_y = height // 2
+grid[center_y, center_x] = 1
 
 
 def get_neighbors(grid, i, j):
@@ -29,15 +31,20 @@ def get_neighbors(grid, i, j):
     # Up
     if i > 0 and grid[i - 1, j] != 0:
         neighbors.append(grid[i - 1, j])
+    # Wrap up boundary
+    elif i == 0 and grid[grid.shape[0] - 1, j] != 0:
+        neighbors.append(grid[grid.shape[0] - 1, j])
 
     # Down
     if i < grid.shape[0] - 1 and grid[i + 1, j] != 0:
         neighbors.append(grid[i + 1, j])
+    # Wrap down boundary
+    elif i == grid.shape[0] - 1 and grid[0, j] != 0:
+        neighbors.append(grid[0, j])
 
     # Left
     if j > 0 and grid[i, j - 1] != 0:
         neighbors.append(grid[i, j - 1])
-
     # Wrap left boundary
     elif j == 0 and grid[i, grid.shape[1] - 1] != 0:
         neighbors.append(grid[i, grid.shape[1] - 1])
@@ -45,7 +52,6 @@ def get_neighbors(grid, i, j):
     # Right
     if j < grid.shape[1] - 1 and grid[i, j + 1] != 0:
         neighbors.append(grid[i, j + 1])
-
     # Wrap right boundary
     elif j == grid.shape[1] - 1 and grid[i, 0] != 0:
         neighbors.append(grid[i, 0])
@@ -58,8 +64,15 @@ def add_particle(color_value):
     hit = False
 
     while not hit:
-        x = np.random.randint(launch_x, kill_x)
-        y = np.random.randint(launch_y, kill_y)
+        if np.random.random() < 0.5:
+            x = np.random.randint(center_x + launch_x, center_x + kill_x)
+        else:
+            x = np.random.randint(center_x - kill_x, center_x - launch_x)
+
+        if np.random.random() < 0.5:
+            y = np.random.randint(center_y + launch_y, center_y + kill_y)
+        else:
+            y = np.random.randint(center_y - kill_y, center_y - launch_y)
 
         step_vectors = [
             (1, 0),
@@ -74,9 +87,15 @@ def add_particle(color_value):
             x += dx
             y += dy
 
+            # Wrap boundaries
+            x %= L
+            y %= height
+
+            dist_x = abs(x - center_x)
+            dist_y = abs(y - center_y)
+
             # Check if the particle has hit the kill zone
-            r = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            if r >= kill_x:
+            if dist_x >= kill_x or dist_y >= kill_y:
                 break
 
             # Check if it has hit a neighbor
@@ -85,14 +104,21 @@ def add_particle(color_value):
                 hit = True
                 grid[y, x] = color_value
 
-                if r > max_r:
-                    delta_r = r - max_r
-                    max_r = r
-                    kill_x = min(height // 2, L // 2, kill_x + delta_r)
-                    launch_radius = min(
-                        height // 2 - spawn_zone,
-                        L // 2 - spawn_zone,
-                        launch_radius + delta_r,
+                if dist_x > max_x:
+                    max_x = dist_x
+                    kill_x = min(height // 2, L // 2, kill_x + 1)
+                    launch_x = min(
+                        height // 2 - spawn_zone_x,
+                        L // 2 - spawn_zone_x,
+                        launch_x + 1,
+                    )
+                elif dist_y > max_y:
+                    max_y = dist_y
+                    kill_y = min(height // 2, L // 2, kill_y + 1)
+                    launch_y = min(
+                        height // 2 - spawn_zone_y,
+                        L // 2 - spawn_zone_y,
+                        launch_y + 1,
                     )
                 break
 

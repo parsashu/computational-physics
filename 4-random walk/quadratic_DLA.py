@@ -3,17 +3,14 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import random
 
-N = 10000
+
+N = 5000
 L = 1000
 height = 1000
 
-launch_x = 10
-launch_y = 10
-kill_x = 30
-kill_y = 30
-
-spawn_zone_x = kill_x - launch_x
-spawn_zone_y = kill_y - launch_y
+launch_l = 5
+kill_l = 10
+spawn_zone_l = kill_l - launch_l
 
 max_x = 1
 max_y = 1
@@ -24,55 +21,34 @@ center_y = height // 2
 grid[center_y, center_x] = 1
 
 
-def get_neighbors(grid, i, j):
-    """Get the up, down, left and right neighbors of the cell"""
-    neighbors = []
+def has_neighbor(x, y):
+    positions = [
+        ((y - 1) % height, x),  # Up
+        ((y + 1) % height, x),  # Down
+        (y, (x - 1) % L),  # Left
+        (y, (x + 1) % L),  # Right
+    ]
 
-    # Up
-    if i > 0 and grid[i - 1, j] != 0:
-        neighbors.append(grid[i - 1, j])
-    # Wrap up boundary
-    elif i == 0 and grid[grid.shape[0] - 1, j] != 0:
-        neighbors.append(grid[grid.shape[0] - 1, j])
-
-    # Down
-    if i < grid.shape[0] - 1 and grid[i + 1, j] != 0:
-        neighbors.append(grid[i + 1, j])
-    # Wrap down boundary
-    elif i == grid.shape[0] - 1 and grid[0, j] != 0:
-        neighbors.append(grid[0, j])
-
-    # Left
-    if j > 0 and grid[i, j - 1] != 0:
-        neighbors.append(grid[i, j - 1])
-    # Wrap left boundary
-    elif j == 0 and grid[i, grid.shape[1] - 1] != 0:
-        neighbors.append(grid[i, grid.shape[1] - 1])
-
-    # Right
-    if j < grid.shape[1] - 1 and grid[i, j + 1] != 0:
-        neighbors.append(grid[i, j + 1])
-    # Wrap right boundary
-    elif j == grid.shape[1] - 1 and grid[i, 0] != 0:
-        neighbors.append(grid[i, 0])
-
-    return neighbors
+    for ny, nx in positions:
+        if grid[ny, nx] != 0:
+            return True
+    return False
 
 
 def add_particle(color_value):
-    global kill_x, kill_y, launch_x, launch_y, max_x, max_y
+    global kill_l, launch_l, max_x, max_y
     hit = False
 
     while not hit:
         if np.random.random() < 0.5:
-            x = np.random.randint(center_x + launch_x, center_x + kill_x)
+            x = np.random.randint(center_x + launch_l, center_x + kill_l)
         else:
-            x = np.random.randint(center_x - kill_x, center_x - launch_x)
+            x = np.random.randint(center_x - kill_l, center_x - launch_l)
 
         if np.random.random() < 0.5:
-            y = np.random.randint(center_y + launch_y, center_y + kill_y)
+            y = np.random.randint(center_y + launch_l, center_y + kill_l)
         else:
-            y = np.random.randint(center_y - kill_y, center_y - launch_y)
+            y = np.random.randint(center_y - kill_l, center_y - launch_l)
 
         step_vectors = [
             (1, 0),
@@ -95,31 +71,24 @@ def add_particle(color_value):
             dist_y = abs(y - center_y)
 
             # Check if the particle has hit the kill zone
-            if dist_x >= kill_x or dist_y >= kill_y:
+            if dist_x >= kill_l or dist_y >= kill_l:
                 break
 
             # Check if it has hit a neighbor
-            neighbors = get_neighbors(grid, y, x)
-            if len(neighbors) > 0:
+            if has_neighbor(x, y):
                 hit = True
                 grid[y, x] = color_value
 
-                if dist_x > max_x:
-                    max_x = dist_x
-                    kill_x = min(height // 2, L // 2, kill_x + 1)
-                    launch_x = min(
-                        height // 2 - spawn_zone_x,
-                        L // 2 - spawn_zone_x,
-                        launch_x + 1,
+                if max(dist_x, dist_y) > max(max_x, max_y):
+                    max_x = max(max_x, dist_x)
+                    max_y = max(max_y, dist_y)
+                    kill_l = min(height // 2, L // 2, kill_l + 1)
+                    launch_l = min(
+                        height // 2 - spawn_zone_l,
+                        L // 2 - spawn_zone_l,
+                        launch_l + 1,
                     )
-                elif dist_y > max_y:
-                    max_y = dist_y
-                    kill_y = min(height // 2, L // 2, kill_y + 1)
-                    launch_y = min(
-                        height // 2 - spawn_zone_y,
-                        L // 2 - spawn_zone_y,
-                        launch_y + 1,
-                    )
+
                 break
 
 
@@ -139,7 +108,7 @@ custom_cmap = ListedColormap(colors)
 
 plt.figure(figsize=(6, 6))
 plt.imshow(grid, cmap=custom_cmap, interpolation="none")
-plt.title(f"2D Diffusion-Limited Aggregation (Particles: {N})")
+plt.title(f"2D Diffusion-Limited Aggregation quadratic (Particles: {N})")
 plt.colorbar(label="Particle ID")
 plt.xticks([])
 plt.yticks([])

@@ -35,10 +35,11 @@ def self_avoiding_walk():
         visited.append((x[i], y[i]))
         i += 1
 
-    return x[:i], y[:i]
+    length = len(x) - 1
+    return x[:i], y[:i], length
 
 
-x_pos, y_pos = self_avoiding_walk()
+x_pos, y_pos, length = self_avoiding_walk()
 
 plt.figure(figsize=(10, 8))
 plt.plot(x_pos, y_pos, "b-", alpha=0.5, label="Path")
@@ -55,27 +56,19 @@ plt.legend()
 plt.show()
 
 
-# # Plot r^2 vs time
-# time_range = np.linspace(1, 1000, 20, dtype=int)
-# r2_list = []
-# num_ensemble = 1000
+# Plot length distribution
+length_list = []
+num_runs = 10000
 
-# for time in time_range:
-#     ensemble_r2 = []
-
-#     for _ in range(num_ensemble):
-#         x_pos, y_pos = self_avoiding_walk(time)
-#         r2 = x_pos[-1] ** 2 + y_pos[-1] ** 2
-#         ensemble_r2.append(r2)
-
-#     avg_r2 = np.mean(ensemble_r2)
-#     r2_list.append(avg_r2)
+for _ in range(num_runs):
+    _, _, length = self_avoiding_walk()
+    length_list.append(length)
 
 
-# plt.figure(figsize=(10, 6))
-# plt.scatter(time_range, r2_list, c="b", s=20)
-# plt.title(f"r^2 from Origin vs Time (n={num_ensemble} ensembles)")
-# plt.xlabel("t")
-# plt.ylabel("r^2 from Origin")
-# plt.grid(True)
-# plt.show()
+plt.figure(figsize=(10, 6))
+plt.hist(length_list, bins=np.arange(0, max(length_list) + 20, 10), edgecolor='black')
+plt.title(f"Length Distribution (n={num_runs} runs)")
+plt.xlabel("Length")
+plt.ylabel("Frequency")
+plt.grid(True)
+plt.show()

@@ -1,1 +1,1 @@
-color_range
+    return x[:i], y[:i]

@@ -111,3 +111,23 @@ plt.title(
 plt.grid(True)
 plt.legend()
 plt.show()
+
+# Life time vs initial position
+death_prob_threshold = 0.99
+x0_values = np.linspace(-10, 10, 21).astype(int)
+life_time = []
+
+for x0_ in x0_values:
+    n_steps, probability, right_trap_prob, left_trap_prob = random_walk_until_threshold(
+        death_prob_threshold, x0_, p, q
+    )
+    life_time.append(n_steps)
+
+plt.figure(figsize=(10, 6))
+plt.plot(x0_values, life_time, "go-", linewidth=2)
+plt.xlabel("Initial Position (x0)")
+plt.ylabel("Life Time")
+plt.title(f"Life Time to Reach Death Probability Threshold of {death_prob_threshold:.2f} (p={p})")
+plt.grid(True)
+plt.show()
+

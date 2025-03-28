@@ -1,6 +1,4 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import random
 
 
 def explore(current_pos, visited, steps_taken, N):
@@ -31,6 +29,33 @@ def count_all_SAWs(N):
     return explore(start_pos, visited, 0, N)
 
 
-for n in range(1, 11):
+lengths = list(range(1, 15))
+counts = []
+counts_by_free = []
+
+for n in lengths:
     count = count_all_SAWs(n)
-    print(f"Number of SAWs of length {n}: {count}")
+    counts.append(count)
+
+    count_by_free = count / (4**n)
+    counts_by_free.append(count_by_free)
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(lengths, counts, "o-", linewidth=2, markersize=8)
+plt.xlabel("Length (N)")
+plt.ylabel("Number of SAWs")
+plt.title("Number of Self-Avoiding Walks vs Length")
+plt.grid(True)
+plt.xticks(lengths)
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(lengths, counts_by_free, "o-", linewidth=2, markersize=8)
+plt.xlabel("Length (N)")
+plt.ylabel("Count / 4^N")
+plt.title("Ratio of SAWs to Free Walks vs Length")
+plt.grid(True)
+plt.xticks(lengths)
+plt.show()
+

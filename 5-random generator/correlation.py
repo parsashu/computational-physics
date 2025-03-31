@@ -1,6 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+from pseudorandom import rand_LCG
 
 N = 10000
 n_ensemble = 100
@@ -9,10 +10,10 @@ n_ensemble = 100
 def before4_rnd(N):
     numbers = []
     cache = []
-    
+
     while len(numbers) < N:
         random_number = random.randint(0, 9)
-        
+
         if random_number == 4 and len(cache) > 0:
             numbers.append(cache[-1])
             cache = []
@@ -20,7 +21,7 @@ def before4_rnd(N):
             numbers.append(4)
         else:
             cache.append(random_number)
-            
+
     return numbers
 
 

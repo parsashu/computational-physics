@@ -1,6 +1,7 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+from pseudorandom import rand_LCG
 
 N = 10000
 n_ensemble = 1000
@@ -14,7 +15,8 @@ def call_rnd(N):
     return numbers
 
 
-numbers = call_rnd(N)
+# numbers = call_rnd(N)
+numbers = rand_LCG(N)
 
 plt.figure(figsize=(10, 6))
 plt.hist(numbers, bins=range(11), align="left", rwidth=0.8)
@@ -27,9 +29,10 @@ plt.show()
 
 
 def sigma(N):
-    numbers = call_rnd(N)
+    # numbers = call_rnd(N)
+    numbers = rand_LCG(N)
+    
     sigma = np.zeros(10)
-
     for i in range(10):
         num_count = numbers.count(i)
         sigma[i] = num_count

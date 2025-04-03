@@ -1,6 +1,8 @@
 from random import random
 import math
+import numpy as np
 from matplotlib import pyplot as plt
+from scipy import stats
 
 N = 100000
 
@@ -26,9 +28,18 @@ for _ in range(N // 2):
     numbers.extend([y1, y2])
 
 plt.figure(figsize=(10, 6))
-plt.hist(numbers, bins=50, rwidth=0.8)
+hist, bin_edges = np.histogram(numbers, bins=50, density=True)
+bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+
+mu, sigma = stats.norm.fit(numbers)
+x = np.linspace(min(numbers), max(numbers), 100)
+gaussian_curve = stats.norm.pdf(x, mu, sigma)
+
+plt.hist(numbers, bins=50, rwidth=0.8, density=True, alpha=0.7, label='Histogram')
+plt.plot(x, gaussian_curve, 'r-', linewidth=2, label=f'Gaussian Fit: μ={mu:.2f}, σ={sigma:.2f}')
 plt.xlabel("Value")
-plt.ylabel("Frequency")
-plt.title(f"Distribution of {N} Gaussian Random Numbers")
+plt.ylabel("Probability Density")
+plt.title(f"Distribution of {N} Gaussian Random Numbers with Fitted Curve")
 plt.grid(axis="y", alpha=0.75)
+plt.legend()
 plt.show()

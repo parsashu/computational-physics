@@ -7,7 +7,7 @@ from scipy import stats
 N = 100000
 
 
-def gaussian_rnd(sigma):
+def gaussian_rnd(sigma=1):
     x1 = random()
     x2 = random()
 
@@ -35,8 +35,14 @@ mu, sigma = stats.norm.fit(numbers)
 x = np.linspace(min(numbers), max(numbers), 100)
 gaussian_curve = stats.norm.pdf(x, mu, sigma)
 
-plt.hist(numbers, bins=50, rwidth=0.8, density=True, alpha=0.7, label='Histogram')
-plt.plot(x, gaussian_curve, 'r-', linewidth=2, label=f'Gaussian Fit: μ={mu:.2f}, σ={sigma:.2f}')
+plt.hist(numbers, bins=50, rwidth=0.8, density=True, alpha=0.7, label="Histogram")
+plt.plot(
+    x,
+    gaussian_curve,
+    "r-",
+    linewidth=2,
+    label=f"Gaussian Fit: μ={mu:.2f}, σ={sigma:.2f}",
+)
 plt.xlabel("Value")
 plt.ylabel("Probability Density")
 plt.title(f"Distribution of {N} Gaussian Random Numbers with Fitted Curve")

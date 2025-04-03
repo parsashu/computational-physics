@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pseudorandom import rand_LCG
 
-N = 10000
+N = 1000000
 n_ensemble = 100
 
 
@@ -25,20 +25,33 @@ def before4_rnd(N):
     return numbers
 
 
-numbers = before4_rnd(N)
+def before4_LCG(N):
+    init_numbers = rand_LCG(N)
+    numbers = []
+
+    for i in range(1, len(init_numbers)):
+        if init_numbers[i] == 4:
+            numbers.append(init_numbers[i - 1])
+
+    return numbers
+
+
+# numbers = before4_rnd(N)
+numbers = before4_LCG(N)
 
 plt.figure(figsize=(10, 6))
 plt.hist(numbers, bins=range(11), align="left", rwidth=0.8)
 plt.xlabel("Number")
 plt.ylabel("Frequency")
-plt.title(f"Distribution of {N} Random Numbers (0-9)")
+plt.title(f"Distribution of {N} Numbers Before 4 (0-9)")
 plt.xticks(range(10))
 plt.grid(axis="y", alpha=0.75)
 plt.show()
 
 
 def sigma(N):
-    numbers = before4_rnd(N)
+    # numbers = before4_rnd(N)
+    numbers = before4_LCG(N)
     sigma = np.zeros(10)
 
     for i in range(10):
@@ -55,9 +68,12 @@ def sigma(N):
 N_range = np.linspace(100, 10000, 20)
 sigma_list = []
 
-for n in N_range:
+for i, n in enumerate(N_range):
+    print(f"Processing {i+1}/{len(N_range)}: N = {int(n)}")
     sigma_avg = []
-    for _ in range(n_ensemble):
+    for j in range(n_ensemble):
+        if j % 100 == 0 and j > 0:
+            print(f"  Completed {j}/{n_ensemble} ensembles")
         sigma_avg.append(sigma(int(n)))
 
     sigma_avg = np.mean(sigma_avg)
@@ -71,7 +87,7 @@ plt.plot(N_range, theoretical_curve, "r--", label=f"{coeff:.4f}/√N")
 
 plt.xlabel("N (Sample Size)")
 plt.ylabel("Sigma")
-plt.title("Sigma vs Sample Size N with 1/√N Fit")
+plt.title(f"Sigma vs Sample Size N with 1/√N Fit - Before 4 (Ensembles: {n_ensemble})")
 plt.grid(True, alpha=0.3)
 plt.legend()
 plt.tight_layout()

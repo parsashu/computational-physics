@@ -67,7 +67,20 @@ def importance_sampling(a, b, N):
 
 
 # Compare the two methods table
-sample_sizes = [10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000]
+sample_sizes = [
+    100,
+    1000,
+    5000,
+    10000,
+    25000,
+    50000,
+    75000,
+    100000,
+    250000,
+    500000,
+    750000,
+    1000000,
+]
 results = []
 
 headers = [

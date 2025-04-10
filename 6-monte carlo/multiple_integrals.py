@@ -21,7 +21,7 @@ def random_coordinates():
     return r, theta, phi
 
 
-def monte_carlo_integration(N):
+def monte_carlo(N):
 
     mean_m = 0
     mean_sqr_m = 0
@@ -32,11 +32,14 @@ def monte_carlo_integration(N):
         mean_m += dm(r, theta)
         mean_sqr_m += (dm(r, theta)) ** 2
 
-        mean_m /= N
-        mean_sqr_m /= N
+    mean_m /= N
+    mean_sqr_m /= N
 
-    I = mean_m * np.pi**2
+    I = mean_m * 2 * np.pi**2
     sigma = np.sqrt(mean_sqr_m - mean_m**2)
     delta = sigma / np.sqrt(N)
 
     return float(I), float(sigma), float(delta)
+
+
+print(monte_carlo(1000000)[0] / np.pi)

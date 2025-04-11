@@ -16,7 +16,7 @@ def g(x):
     return np.exp(-x)
 
 
-def random_gen_g(a, b):
+def random_gen_g():
     x = np.random.random()
     y = -np.log(x)
     return y
@@ -45,12 +45,11 @@ def simple_sampling(a, b, N):
 def importance_sampling(a, b, N):
     mean_f_over_g = 0
     mean_sqr_f_over_g = 0
-    norm_const = np.exp(-a) - np.exp(-b)
 
     for _ in range(N):
         x = -1
         while not (a <= x <= b):
-            x = random_gen_g(a, b)
+            x = random_gen_g()
 
         mean_f_over_g += f(x) / g(x)
         mean_sqr_f_over_g += ((f(x) / g(x))) ** 2
@@ -58,7 +57,7 @@ def importance_sampling(a, b, N):
     mean_f_over_g /= N
     mean_sqr_f_over_g /= N
 
-    I = mean_f_over_g * norm_const
+    I = mean_f_over_g * (np.exp(-a) - np.exp(-b))
     sigma = np.sqrt(mean_sqr_f_over_g - mean_f_over_g**2)
     delta = sigma / np.sqrt(N)
     real_value_difference = abs(I - REAL_VALUE)
@@ -130,7 +129,7 @@ print(tabulate.tabulate(results, headers=headers, floatfmt=".6f", tablefmt="grid
 
 # Generate histogram of random numbers
 N = 100000
-samples = [random_gen_g(a, b) for _ in range(N)]
+samples = [random_gen_g() for _ in range(N)]
 
 plt.figure(figsize=(10, 6))
 plt.hist(samples, bins=50, density=True, alpha=0.7, color="blue")

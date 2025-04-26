@@ -3,28 +3,44 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 L = 200
-T = 5
+T = 0.1
 J = 1
 N = L * L
 n_steps = 1000000
-n_measure = 10000
+n_measure = 1000
 n_ensemble = 1
 
 S = np.random.choice([-1, 1], (L, L))
-right = np.roll(S, -1, axis=0)
-left = np.roll(S, 1, axis=0)
-up = np.roll(S, -1, axis=1)
-down = np.roll(S, 1, axis=1)
 
-boltzmann_factors = {dE: np.exp(-dE / T) for dE in [-8 * J, -4 * J, 0, 4 * J, 8 * J]}
+boltzmann_factors = {dE: np.exp(-dE * J / T) for dE in [-8, -4, 0, 4, 8]}
 
 
 def delta_energy(i, j):
-    return 2 * J * S[i, j] * (right[i, j] + left[i, j] + up[i, j] + down[i, j])
+    return (
+        2
+        * S[i, j]
+        * (
+            S[(i + 1) % L, j]
+            + S[(i - 1) % L, j]
+            + S[i, (j + 1) % L]
+            + S[i, (j - 1) % L]
+        )
+    )
 
 
 def total_energy():
-    return -J * np.sum(S * (right + up))
+    energy = 0
+    for i in range(L):
+        for j in range(L):
+            energy += (
+                -J
+                * S[i, j]
+                * (
+                    S[(i + 1) % L, j]  # right neighbor
+                    + S[i, (j + 1) % L]  # down neighbor
+                )
+            )
+    return energy
 
 
 def magnetization():
@@ -47,11 +63,6 @@ def metropolis(n_steps, n_measure):
         dE = delta_energy(i, j)
         if random_numbers[step] < boltzmann_factors[int(dE)]:
             S[i, j] = -S[i, j]
-            # Update neighbors
-            right[i, j] = S[(i + 1) % L, j]
-            left[i, j] = S[(i - 1) % L, j]
-            up[i, j] = S[i, (j + 1) % L]
-            down[i, j] = S[i, (j - 1) % L]
 
         if step % measure_interval == 0:
             energies.append(total_energy())
@@ -72,13 +83,13 @@ for _ in range(n_ensemble):
 avg_energies = np.mean(ensemble_energies, axis=0)
 avg_magnetizations = np.mean(ensemble_magnetizations, axis=0)
 
-plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 6))
 plt.imshow(S, cmap="RdYlBu", vmin=-1, vmax=1)
 plt.colorbar(ticks=[-1, 1], label="Spin")
 plt.title(f"Ising Model\nT={T} n_steps={n_steps} n_measure={n_measure}")
 plt.show()
 
-plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 6))
 plt.plot(avg_energies)
 plt.xlabel("Measurement")
 plt.ylabel("Energy")
@@ -94,7 +105,7 @@ plt.axhline(
 plt.legend()
 plt.show()
 
-plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 6))
 plt.plot(avg_magnetizations)
 plt.xlabel("Measurement")
 plt.ylabel("Magnetization")

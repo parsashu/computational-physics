@@ -20,10 +20,10 @@ def delta_energy(i, j):
         2
         * S[i, j]
         * (
-            S[(i + 1) % L, j]
-            + S[(i - 1) % L, j]
-            + S[i, (j + 1) % L]
-            + S[i, (j - 1) % L]
+            S[(i + 1) % L, j]  # right neighbor
+            + S[(i - 1) % L, j]  # left neighbor
+            + S[i, (j + 1) % L]  # down neighbor
+            + S[i, (j - 1) % L]  # up neighbor
         )
     )
 

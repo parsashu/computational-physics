@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 L = 200
-T = 0.1
+T = 5
 J = 1
 N = L * L
-n_steps = 10000000
-n_measure = 100000
+n_steps = 1000000
+n_measure = 10000
+n_ensemble = 1
 
 S = np.random.choice([-1, 1], (L, L))
 right = np.roll(S, -1, axis=0)
@@ -31,6 +32,7 @@ def magnetization():
 
 
 def metropolis(n_steps, n_measure):
+    """Metropolis algorithm for the Ising model"""
     energies = []
     magnetizations = []
     measure_interval = n_steps // n_measure
@@ -58,7 +60,17 @@ def metropolis(n_steps, n_measure):
     return S, energies, magnetizations
 
 
-S, energies, magnetizations = metropolis(n_steps=n_steps, n_measure=n_measure)
+# Ensemble average
+ensemble_energies = []
+ensemble_magnetizations = []
+
+for _ in range(n_ensemble):
+    S, energies, magnetizations = metropolis(n_steps=n_steps, n_measure=n_measure)
+    ensemble_energies.append(energies)
+    ensemble_magnetizations.append(magnetizations)
+
+avg_energies = np.mean(ensemble_energies, axis=0)
+avg_magnetizations = np.mean(ensemble_magnetizations, axis=0)
 
 plt.figure(figsize=(8, 8))
 plt.imshow(S, cmap="RdYlBu", vmin=-1, vmax=1)
@@ -67,29 +79,33 @@ plt.title(f"Ising Model\nT={T} n_steps={n_steps} n_measure={n_measure}")
 plt.show()
 
 plt.figure(figsize=(8, 8))
-plt.plot(energies)
+plt.plot(avg_energies)
 plt.xlabel("Measurement")
 plt.ylabel("Energy")
-plt.title("Energy Evolution")
+plt.title(
+    f"Energy Evolution\nT={T} n_steps={n_steps} n_measure={n_measure} n_ensemble={n_ensemble}"
+)
 plt.axhline(
-    y=energies[-1],
+    y=avg_energies[-1],
     color="r",
     linestyle="--",
-    label=f"Final: {energies[-1]:.2f}, Mean: {np.mean(energies):.2f}",
+    label=f"Final: {avg_energies[-1]:.2f}, Mean: {np.mean(avg_energies):.2f}",
 )
 plt.legend()
 plt.show()
 
 plt.figure(figsize=(8, 8))
-plt.plot(magnetizations)
+plt.plot(avg_magnetizations)
 plt.xlabel("Measurement")
 plt.ylabel("Magnetization")
-plt.title("Magnetization Evolution")
+plt.title(
+    f"Magnetization Evolution\nT={T} n_steps={n_steps} n_measure={n_measure} n_ensemble={n_ensemble}"
+)
 plt.axhline(
-    y=magnetizations[-1],
+    y=avg_magnetizations[-1],
     color="r",
     linestyle="--",
-    label=f"Final: {magnetizations[-1]:.2f}, Mean: {np.mean(magnetizations):.2f}",
+    label=f"Final: {avg_magnetizations[-1]:.2f}, Mean: {np.mean(avg_magnetizations):.2f}",
 )
 plt.legend()
 plt.show()

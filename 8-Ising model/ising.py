@@ -6,59 +6,59 @@ L = 200
 T = 0.1
 J = 1
 N = L * L
-n_steps = 1000000
-n_measure = 1000
+n_steps = 10000000
+n_measure = 100000
 
-S0 = np.random.choice([-1, 1], (L, L))
+S = np.random.choice([-1, 1], (L, L))
+right = np.roll(S, -1, axis=0)
+left = np.roll(S, 1, axis=0)
+up = np.roll(S, -1, axis=1)
+down = np.roll(S, 1, axis=1)
+
 boltzmann_factors = {dE: np.exp(-dE / T) for dE in [-8 * J, -4 * J, 0, 4 * J, 8 * J]}
 
 
-def delta_energy(S, i, j):
-    return (
-        2
-        * J
-        * S[i, j]
-        * (
-            S[(i + 1) % L, j]
-            + S[(i - 1) % L, j]
-            + S[i, (j + 1) % L]
-            + S[i, (j - 1) % L]
-        )
-    )
+def delta_energy(i, j):
+    return 2 * J * S[i, j] * (right[i, j] + left[i, j] + up[i, j] + down[i, j])
 
 
-def total_energy(S):
-    energy = 0
-    for i in range(L):
-        for j in range(L):
-            energy += -J * S[i, j] * (S[(i + 1) % L, j] + S[i, (j + 1) % L])
-    return energy
+def total_energy():
+    return -J * np.sum(S * (right + up))
 
 
-def magnetization(S):
+def magnetization():
     return abs(np.sum(S)) / N
 
 
-def metropolis(S, n_steps=1000, n_measure=1000):
+def metropolis(n_steps, n_measure):
     energies = []
     magnetizations = []
+    measure_interval = n_steps // n_measure
+
+    # All random numbers and indices in the whole simulation
+    indices = np.random.randint(0, L, size=(n_steps, 2))
+    random_numbers = np.random.random(n_steps)
 
     for step in tqdm(range(n_steps)):
-        i = np.random.randint(0, L)
-        j = np.random.randint(0, L)
+        i, j = indices[step]
 
-        dE = delta_energy(S, i, j)
-        if np.random.rand() < boltzmann_factors[int(dE)]:
+        dE = delta_energy(i, j)
+        if random_numbers[step] < boltzmann_factors[int(dE)]:
             S[i, j] = -S[i, j]
+            # Update neighbors
+            right[i, j] = S[(i + 1) % L, j]
+            left[i, j] = S[(i - 1) % L, j]
+            up[i, j] = S[i, (j + 1) % L]
+            down[i, j] = S[i, (j - 1) % L]
 
-        if step % (n_steps // n_measure) == 0:
-            energies.append(total_energy(S))
-            magnetizations.append(magnetization(S))
+        if step % measure_interval == 0:
+            energies.append(total_energy())
+            magnetizations.append(magnetization())
 
     return S, energies, magnetizations
 
 
-S, energies, magnetizations = metropolis(S0, n_steps=n_steps, n_measure=n_measure)
+S, energies, magnetizations = metropolis(n_steps=n_steps, n_measure=n_measure)
 
 plt.figure(figsize=(8, 8))
 plt.imshow(S, cmap="RdYlBu", vmin=-1, vmax=1)
@@ -71,7 +71,6 @@ plt.plot(energies)
 plt.xlabel("Measurement")
 plt.ylabel("Energy")
 plt.title("Energy Evolution")
-plt.ylabel("Energy")
 plt.axhline(
     y=energies[-1],
     color="r",
@@ -86,7 +85,6 @@ plt.plot(magnetizations)
 plt.xlabel("Measurement")
 plt.ylabel("Magnetization")
 plt.title("Magnetization Evolution")
-plt.ylabel("Magnetization")
 plt.axhline(
     y=magnetizations[-1],
     color="r",

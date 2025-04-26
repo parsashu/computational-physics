@@ -1,20 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
-L = 10
-T = 1000
-J = 1.0
+L = 200
+T = 0.1
+J = 1
 N = L * L
 n_steps = 1000000
 n_measure = 1000
 
 S0 = np.random.choice([-1, 1], (L, L))
-boltzmann_factors = {dE: np.exp(-dE / T) for dE in [-8, -4, 0, 4, 8]}
+boltzmann_factors = {dE: np.exp(-dE / T) for dE in [-8 * J, -4 * J, 0, 4 * J, 8 * J]}
 
 
 def delta_energy(S, i, j):
     return (
-        -2
+        2
         * J
         * S[i, j]
         * (
@@ -42,7 +43,7 @@ def metropolis(S, n_steps=1000, n_measure=1000):
     energies = []
     magnetizations = []
 
-    for step in range(n_steps):
+    for step in tqdm(range(n_steps)):
         i = np.random.randint(0, L)
         j = np.random.randint(0, L)
 
@@ -59,27 +60,38 @@ def metropolis(S, n_steps=1000, n_measure=1000):
 
 S, energies, magnetizations = metropolis(S0, n_steps=n_steps, n_measure=n_measure)
 
-fig1 = plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 8))
 plt.imshow(S, cmap="RdYlBu", vmin=-1, vmax=1)
 plt.colorbar(ticks=[-1, 1], label="Spin")
-plt.title(f"Spin Configuration\nT={T}")
+plt.title(f"Ising Model\nT={T} n_steps={n_steps} n_measure={n_measure}")
 plt.show()
 
-fig2 = plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 8))
 plt.plot(energies)
 plt.xlabel("Measurement")
 plt.ylabel("Energy")
 plt.title("Energy Evolution")
+plt.ylabel("Energy")
+plt.axhline(
+    y=energies[-1],
+    color="r",
+    linestyle="--",
+    label=f"Final: {energies[-1]:.2f}, Mean: {np.mean(energies):.2f}",
+)
+plt.legend()
 plt.show()
 
-fig3 = plt.figure(figsize=(8, 8))
+plt.figure(figsize=(8, 8))
 plt.plot(magnetizations)
 plt.xlabel("Measurement")
 plt.ylabel("Magnetization")
 plt.title("Magnetization Evolution")
+plt.ylabel("Magnetization")
+plt.axhline(
+    y=magnetizations[-1],
+    color="r",
+    linestyle="--",
+    label=f"Final: {magnetizations[-1]:.2f}, Mean: {np.mean(magnetizations):.2f}",
+)
+plt.legend()
 plt.show()
-
-print(f"Final energy: {energies[-1]}")
-print(f"Final magnetization: {magnetizations[-1]}")
-print(f"Average energy: {np.mean(energies)}")
-print(f"Average magnetization: {np.mean(magnetizations)}")

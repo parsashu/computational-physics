@@ -2,80 +2,68 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-L = 200
-T = 2.269
+L = 100
+T = 5
 J = 1
 N = L * L
-n_steps = 1000
-n_measure = 20
-n_skips = 100
+n_steps = 10000000
+n_measure = 10000
 n_ensemble = 1
-boltzmann_factor_dict = {dE: np.exp(-dE * J / T) for dE in [-8, -4, 0, 4, 8]}
 
-# Create chessboard pattern masks
-white_mask = np.zeros((L, L), dtype=bool)
-white_mask[::2, ::2] = True
-white_mask[1::2, 1::2] = True
-black_mask = ~white_mask
+boltzmann_factors = {dE: np.exp(-dE * J / T) for dE in [-8, -4, 0, 4, 8]}
 
 
-def delta_energy(S, right, left, down, up):
-    return 2 * S * (right + left + down + up)
+def delta_energy(S, i, j):
+    return (
+        2
+        * S[i, j]
+        * (
+            S[(i + 1) % L, j]  # right neighbor
+            + S[(i - 1) % L, j]  # left neighbor
+            + S[i, (j + 1) % L]  # down neighbor
+            + S[i, (j - 1) % L]  # up neighbor
+        )
+    )
 
 
-def calc_boltzmann_factors(dE):
-    return np.vectorize(lambda x: boltzmann_factor_dict[x])(dE)
-
-
-def accepte_condition(cell, random_number, boltzmann_factor):
-    return np.where(random_number < boltzmann_factor, -cell, cell)
-
-
-def total_energy(S, right, left, down, up):
-    return -J * np.sum(S * (right + left + down + up)) / 2
+def total_energy(S):
+    energy = 0
+    for i in range(L):
+        for j in range(L):
+            energy += (
+                -J
+                * S[i, j]
+                * (
+                    S[(i + 1) % L, j]  # right neighbor
+                    + S[i, (j + 1) % L]  # down neighbor
+                )
+            )
+    return energy
 
 
 def magnetization(S):
     return abs(np.sum(S)) / N
 
 
-def metropolis(n_steps, n_measure, n_skips):
+def metropolis(n_steps, n_measure):
     """Metropolis algorithm for the Ising model"""
     energies = []
     magnetizations = []
     measure_interval = n_steps // n_measure
-    random_numbers = np.random.random((n_steps, L, L))
+
+    # All random numbers and indices in the whole simulation
+    indices = np.random.randint(0, L, size=(n_steps, 2))
+    random_numbers = np.random.random(n_steps)
 
     for step in tqdm(range(n_steps)):
-        # WHITE update
-        right = np.roll(S, 1, axis=0)
-        left = np.roll(S, -1, axis=0)
-        down = np.roll(S, 1, axis=1)
-        up = np.roll(S, -1, axis=1)
-        dE = delta_energy(S, right, left, down, up)
-        boltz = calc_boltzmann_factors(dE)
-        S[white_mask] = accepte_condition(
-            S[white_mask], random_numbers[step][white_mask], boltz[white_mask]
-        )
+        i, j = indices[step]
 
-        # BLACK update
-        right = np.roll(S, 1, axis=0)
-        left = np.roll(S, -1, axis=0)
-        down = np.roll(S, 1, axis=1)
-        up = np.roll(S, -1, axis=1)
-        dE = delta_energy(S, right, left, down, up)
-        boltz = calc_boltzmann_factors(dE)
-        S[black_mask] = accepte_condition(
-            S[black_mask], random_numbers[step][black_mask], boltz[black_mask]
-        )
+        dE = delta_energy(S, i, j)
+        if random_numbers[step] < boltzmann_factors[int(dE)]:
+            S[i, j] = -S[i, j]
 
-        # Mesurement
-        if step >= n_skips and step % measure_interval == 0:
-            right = np.roll(S, 1, axis=0)
-            left = np.roll(S, -1, axis=0)
-            down = np.roll(S, 1, axis=1)
-            up = np.roll(S, -1, axis=1)
-            energies.append(total_energy(S, right, left, down, up))
+        if step % measure_interval == 0:
+            energies.append(total_energy(S))
             magnetizations.append(magnetization(S))
 
     return S, energies, magnetizations
@@ -87,9 +75,7 @@ ensemble_magnetizations = []
 
 for _ in range(n_ensemble):
     S = np.random.choice([-1, 1], (L, L))
-    S, energies, magnetizations = metropolis(
-        n_steps=n_steps, n_measure=n_measure, n_skips=n_skips
-    )
+    S, energies, magnetizations = metropolis(n_steps=n_steps, n_measure=n_measure)
     ensemble_energies.append(energies)
     ensemble_magnetizations.append(magnetizations)
 

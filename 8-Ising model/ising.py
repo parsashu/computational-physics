@@ -6,41 +6,28 @@ L = 200
 T = 0.1
 J = 1
 N = L * L
-n_steps = 1000000
-n_measure = 1000
+n_steps = 1000
+n_measure = 10
 n_ensemble = 1
 
 S = np.random.choice([-1, 1], (L, L))
-
-boltzmann_factors = {dE: np.exp(-dE * J / T) for dE in [-8, -4, 0, 4, 8]}
-
-
-def delta_energy(i, j):
-    return (
-        2
-        * S[i, j]
-        * (
-            S[(i + 1) % L, j]  # right neighbor
-            + S[(i - 1) % L, j]  # left neighbor
-            + S[i, (j + 1) % L]  # down neighbor
-            + S[i, (j - 1) % L]  # up neighbor
-        )
-    )
+boltzmann_factor_dict = {dE: np.exp(-dE * J / T) for dE in [-8, -4, 0, 4, 8]}
 
 
-def total_energy():
-    energy = 0
-    for i in range(L):
-        for j in range(L):
-            energy += (
-                -J
-                * S[i, j]
-                * (
-                    S[(i + 1) % L, j]  # right neighbor
-                    + S[i, (j + 1) % L]  # down neighbor
-                )
-            )
-    return energy
+def delta_energy(right, left, down, up):
+    return 2 * S * (right + left + down + up)
+
+
+def calc_boltzmann_factors(dE):
+    return np.vectorize(lambda x: boltzmann_factor_dict[x])(dE)
+
+
+def accepte_condition(cell, random_number, boltzmann_factor):
+    return np.where(random_number < boltzmann_factor, -cell, cell)
+
+
+def total_energy(right, left, down, up):
+    return -J * np.sum(S * (right + left + down + up)) / 2
 
 
 def magnetization():
@@ -49,23 +36,25 @@ def magnetization():
 
 def metropolis(n_steps, n_measure):
     """Metropolis algorithm for the Ising model"""
+    global S
     energies = []
     magnetizations = []
     measure_interval = n_steps // n_measure
-
-    # All random numbers and indices in the whole simulation
-    indices = np.random.randint(0, L, size=(n_steps, 2))
-    random_numbers = np.random.random(n_steps)
+    random_numbers = np.random.random((n_steps, L, L))
 
     for step in tqdm(range(n_steps)):
-        i, j = indices[step]
+        right = np.roll(S, 1, axis=0)
+        left = np.roll(S, -1, axis=0)
+        down = np.roll(S, 1, axis=1)
+        up = np.roll(S, -1, axis=1)
+        dE = delta_energy(right, left, down, up)
+        boltzmann_factors = calc_boltzmann_factors(dE)
 
-        dE = delta_energy(i, j)
-        if random_numbers[step] < boltzmann_factors[int(dE)]:
-            S[i, j] = -S[i, j]
+        # Update S using numpy's where for vectorized operation
+        S = accepte_condition(S, random_numbers[step], boltzmann_factors)
 
         if step % measure_interval == 0:
-            energies.append(total_energy())
+            energies.append(total_energy(right, left, down, up))
             magnetizations.append(magnetization())
 
     return S, energies, magnetizations

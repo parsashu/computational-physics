@@ -8,6 +8,7 @@ J = 1
 N = L * L
 n_steps = 1000
 n_measure = 20
+n_skips = 100
 n_ensemble = 1
 boltzmann_factor_dict = {dE: np.exp(-dE * J / T) for dE in [-8, -4, 0, 4, 8]}
 
@@ -18,7 +19,7 @@ white_mask[1::2, 1::2] = True
 black_mask = ~white_mask
 
 
-def delta_energy(right, left, down, up):
+def delta_energy(S, right, left, down, up):
     return 2 * S * (right + left + down + up)
 
 
@@ -30,17 +31,16 @@ def accepte_condition(cell, random_number, boltzmann_factor):
     return np.where(random_number < boltzmann_factor, -cell, cell)
 
 
-def total_energy(right, left, down, up):
+def total_energy(S, right, left, down, up):
     return -J * np.sum(S * (right + left + down + up)) / 2
 
 
-def magnetization():
+def magnetization(S):
     return abs(np.sum(S)) / N
 
 
-def metropolis(n_steps, n_measure):
+def metropolis(n_steps, n_measure, n_skips):
     """Metropolis algorithm for the Ising model"""
-    global S
     energies = []
     magnetizations = []
     measure_interval = n_steps // n_measure
@@ -52,7 +52,7 @@ def metropolis(n_steps, n_measure):
         left = np.roll(S, -1, axis=0)
         down = np.roll(S, 1, axis=1)
         up = np.roll(S, -1, axis=1)
-        dE = delta_energy(right, left, down, up)
+        dE = delta_energy(S, right, left, down, up)
         boltz = calc_boltzmann_factors(dE)
         S[white_mask] = accepte_condition(
             S[white_mask], random_numbers[step][white_mask], boltz[white_mask]
@@ -63,20 +63,20 @@ def metropolis(n_steps, n_measure):
         left = np.roll(S, -1, axis=0)
         down = np.roll(S, 1, axis=1)
         up = np.roll(S, -1, axis=1)
-        dE = delta_energy(right, left, down, up)
+        dE = delta_energy(S, right, left, down, up)
         boltz = calc_boltzmann_factors(dE)
         S[black_mask] = accepte_condition(
             S[black_mask], random_numbers[step][black_mask], boltz[black_mask]
         )
 
         # Mesurement
-        if step % measure_interval == 0:
+        if step >= n_skips and step % measure_interval == 0:
             right = np.roll(S, 1, axis=0)
             left = np.roll(S, -1, axis=0)
             down = np.roll(S, 1, axis=1)
             up = np.roll(S, -1, axis=1)
-            energies.append(total_energy(right, left, down, up))
-            magnetizations.append(magnetization())
+            energies.append(total_energy(S, right, left, down, up))
+            magnetizations.append(magnetization(S))
 
     return S, energies, magnetizations
 
@@ -87,7 +87,9 @@ ensemble_magnetizations = []
 
 for _ in range(n_ensemble):
     S = np.random.choice([-1, 1], (L, L))
-    S, energies, magnetizations = metropolis(n_steps=n_steps, n_measure=n_measure)
+    S, energies, magnetizations = metropolis(
+        n_steps=n_steps, n_measure=n_measure, n_skips=n_skips
+    )
     ensemble_energies.append(energies)
     ensemble_magnetizations.append(magnetizations)
 

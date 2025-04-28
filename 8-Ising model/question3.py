@@ -3,12 +3,11 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 L = 10
-T = 5
 J = 1
 N = L * L
-n_steps = 10000
+n_steps = 1000000
 n_measure = 1000
-n_ensemble = 100
+n_ensemble = 5
 
 
 def delta_energy(S, i, j):
@@ -78,7 +77,7 @@ def Ising_model(T, J, L, n_steps, n_measure):
 
 
 # Ensemble average
-T_range = np.linspace(1, 4.0, 20)
+T_range = np.linspace(1.5, 3.5, 15)
 
 Cv_vs_T = []
 chi_vs_T = []
@@ -102,18 +101,20 @@ for T in tqdm(T_range):
     chi_vs_T.append(np.mean(ensemble_chi))
 
 
-plt.figure(figsize=(12, 8))
-plt.subplot(3, 1, 1)
+plt.figure(figsize=(15, 4))
+plt.subplot(1, 3, 1)
 plt.plot(T_range, Cv_vs_T, "o-")
+plt.xlabel("Temperature (T)")
 plt.ylabel("Heat Capacity (Cv)")
 plt.grid(True)
 
-plt.subplot(3, 1, 2)
+plt.subplot(1, 3, 2)
 plt.plot(T_range, chi_vs_T, "o-")
+plt.xlabel("Temperature (T)")
 plt.ylabel("Magnetic Susceptibility (χ)")
 plt.grid(True)
 
-plt.subplot(3, 1, 3)
+plt.subplot(1, 3, 3)
 plt.plot(T_range, m_vs_T, "o-")
 plt.xlabel("Temperature (T)")
 plt.ylabel("Average Magnetization")

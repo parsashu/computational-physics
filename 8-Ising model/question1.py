@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 L = 10
-T = 5
+T = 1
 J = 1
 N = L * L
 n_steps = 10000

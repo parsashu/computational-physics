@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-L = 5
+L = 10
 J = 1
 N = L * L
-n_steps = 10000000
-n_measure = 10000
-n_ensemble = 1
+n_steps = 1000000
+n_measure = 1000
+n_ensemble = 5
 
 
 def delta_energy(S, i, j):

@@ -14,8 +14,8 @@ Q = np.zeros(n_steps)
 Q[0] = 5
 
 for i in range(n_steps - 1):
-    dQ = -Q[i] / tau * h
-    Q[i + 1] = Q[i] + dQ
+    f_n = -Q[i] / tau
+    Q[i + 1] = Q[i] + f_n * h
 
 plt.plot(t, Q, label="RC Charge")
 plt.xlabel("Time (s)")

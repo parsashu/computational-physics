@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 k = 1
 m = 1
 T = 10000
-h = 0.5
+h = 0.01
 
 x0 = 1
 v0 = 0
@@ -196,6 +196,7 @@ def velocity_verlet(t, h=h, plot=True):
         plt.show()
     return x, v
 
+
 # Biman
 def biman(t, h=h, plot=True):
     n_steps = len(t)
@@ -237,6 +238,7 @@ def biman(t, h=h, plot=True):
         plt.show()
     return x, v
 
+
 # euler(t)
 # euler_cromer(t)
 # frog_jump(t)
@@ -260,10 +262,12 @@ def theoretical_phase_space(t):
 h = np.linspace(1.5, 0.001, 100)
 x_true, v_true = theoretical_phase_space(t)
 
+
 def phase_space_dist(x_true, v_true, x_sim, v_sim):
     dx = np.linalg.norm(x_true - x_sim)
     dv = np.linalg.norm(v_true - v_sim)
     return dx + dv
+
 
 dist_euler = []
 dist_euler_cromer = []
@@ -279,24 +283,28 @@ for h_i in h:
     x_verlet, v_verlet = verlet(t, h=h_i, plot=False)
     x_velocity_verlet, v_velocity_verlet = velocity_verlet(t, h=h_i, plot=False)
     x_biman, v_biman = biman(t, h=h_i, plot=False)
-    
+
     dist_euler.append(phase_space_dist(x_true, v_true, x_euler, v_euler))
-    dist_euler_cromer.append(phase_space_dist(x_true, v_true, x_euler_cromer, v_euler_cromer))
+    dist_euler_cromer.append(
+        phase_space_dist(x_true, v_true, x_euler_cromer, v_euler_cromer)
+    )
     dist_frog_jump.append(phase_space_dist(x_true, v_true, x_frog_jump, v_frog_jump))
     dist_verlet.append(phase_space_dist(x_true, v_true, x_verlet, v_verlet))
-    dist_velocity_verlet.append(phase_space_dist(x_true, v_true, x_velocity_verlet, v_velocity_verlet))
+    dist_velocity_verlet.append(
+        phase_space_dist(x_true, v_true, x_velocity_verlet, v_velocity_verlet)
+    )
     dist_biman.append(phase_space_dist(x_true, v_true, x_biman, v_biman))
 
 plt.figure(figsize=(12, 6))
 # plt.plot(h, dist_euler, label='Euler')
-plt.plot(h, dist_euler_cromer, label='Euler-Cromer')
-plt.plot(h, dist_frog_jump, label='Frog Jump')
-plt.plot(h, dist_verlet, label='Verlet')
-plt.plot(h, dist_velocity_verlet, label='Velocity Verlet')
-plt.plot(h, dist_biman, label='Biman')
-plt.xlabel('h')
-plt.ylabel('Error')
-plt.title('Algorithm Errors vs Time')
+plt.plot(h, dist_euler_cromer, label="Euler-Cromer")
+plt.plot(h, dist_frog_jump, label="Frog Jump")
+plt.plot(h, dist_verlet, label="Verlet")
+plt.plot(h, dist_velocity_verlet, label="Velocity Verlet")
+plt.plot(h, dist_biman, label="Biman")
+plt.xlabel("h")
+plt.ylabel("Error")
+plt.title("Algorithm Errors vs Time")
 plt.legend()
 plt.grid(True)
 plt.show()

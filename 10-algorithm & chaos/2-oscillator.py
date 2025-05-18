@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 k = 1
 m = 1
-T = 100
-h = 0.1
+T = 500
+h = 0.01
 n_steps = int(T / h)
 
 
@@ -32,10 +32,10 @@ def euler():
     plt.show()
 
     plt.figure()
-    plt.plot(x, v, label="Phase Space Euler")
+    plt.plot(x, v, label="Phase Space")
     plt.xlabel("Position (m)")
     plt.ylabel("Velocity (m/s)")
-    plt.title(f"Phase Space (h = {h}s)")
+    plt.title(f"Phase Space Euler (h = {h}s)")
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -64,10 +64,10 @@ def euler_cromer():
     plt.show()
 
     plt.figure()
-    plt.plot(x, v, label="Phase Space Euler-Cromer")
+    plt.plot(x, v, label="Phase Space")
     plt.xlabel("Position (m)")
     plt.ylabel("Velocity (m/s)")
-    plt.title(f"Phase Space (h = {h}s)")
+    plt.title(f"Phase Space Euler-Cromer (h = {h}s)")
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -77,8 +77,9 @@ def euler_cromer():
 def frog_jump():
     t = np.linspace(0, T, n_steps)
     x = np.zeros(n_steps)
-    v_half = np.zeros(n_steps)  
+    v_half = np.zeros(n_steps)
 
+    # First step using Euler
     x[0] = 1
     a0 = -k / m * x[0]
     v_half[0] = 0.5 * a0 * h
@@ -97,10 +98,79 @@ def frog_jump():
     plt.show()
 
     plt.figure()
-    plt.plot(x, v_half, label="Phase Space Frog Jump")
+    plt.plot(x, v_half, label="Phase Space")
     plt.xlabel("Position (m)")
     plt.ylabel("Velocity (m/s)")
-    plt.title(f"Phase Space (h = {h}s)")
+    plt.title(f"Phase Space Frog Jump (h = {h}s)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+# Verlet
+def verlet():
+    t = np.linspace(0, T, n_steps)
+    x = np.zeros(n_steps)
+    v = np.zeros(n_steps)
+
+    x[0] = 1
+    v[0] = 0
+
+    # Second step using Euler
+    x[1] = x[0] + v[0] * h
+    a1 = -k / m * x[1]
+    v[1] = v[0] + a1 * h
+
+    for i in range(1, n_steps - 1):
+        a = -k / m * x[i]
+        x[i + 1] = 2 * x[i] - x[i - 1] + a * h**2
+        v[i + 1] = (x[i + 1] - x[i]) / (2 * h)
+
+    plt.plot(t, x, label="Verlet")
+    plt.xlabel("Time (s)")
+    plt.ylabel("X (m)")
+    plt.title(f"Harmonic Oscillator using Verlet (h = {h}s)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    plt.figure()
+    plt.plot(x, v, label="Phase Space")
+    plt.xlabel("Position (m)")
+    plt.ylabel("Velocity (m/s)")
+    plt.title(f"Phase Space Verlet (h = {h}s)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    
+    
+# Velocity Verlet
+def velocity_verlet():
+    t = np.linspace(0, T, n_steps)
+    x = np.zeros(n_steps)
+    v = np.zeros(n_steps)
+
+    x[0] = 1
+    v[0] = 0
+
+    for i in range(1, n_steps - 1):
+        a = -k / m * x[i]
+        x[i + 1] = 2 * x[i] - x[i - 1] + a * h**2
+        v[i + 1] = (x[i + 1] - x[i]) / (2 * h)
+
+    plt.plot(t, x, label="Velocity Verlet")
+    plt.xlabel("Time (s)")
+    plt.ylabel("X (m)")
+    plt.title(f"Harmonic Oscillator using Velocity Verlet (h = {h}s)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    plt.figure()
+    plt.plot(x, v, label="Phase Space")
+    plt.xlabel("Position (m)")
+    plt.ylabel("Velocity (m/s)")
+    plt.title(f"Phase Space Velocity Verlet (h = {h}s)")
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -108,4 +178,6 @@ def frog_jump():
 
 # euler()
 # euler_cromer()
-frog_jump()
+# frog_jump()
+# verlet()
+velocity_verlet()

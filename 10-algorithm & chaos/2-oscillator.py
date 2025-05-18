@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 k = 1
 m = 1
-T = 500
+T = 10000
 h = 0.5
 
 x0 = 1
@@ -87,7 +87,7 @@ def euler_cromer(t, h=h, plot=True):
 
 
 # Frog jump
-def frog_jump(t, plot=True):
+def frog_jump(t, h=h, plot=True):
     n_steps = len(t)
     x = np.zeros(n_steps)
     v_half = np.zeros(n_steps)
@@ -257,45 +257,46 @@ def theoretical_phase_space(t):
     return x, v
 
 
-t = np.linspace(10_000, 20_000, 10_000)
+h = np.linspace(1.5, 0.001, 100)
 x_true, v_true = theoretical_phase_space(t)
-x_euler, v_euler = euler(t, plot=False)
-x_euler_cromer, v_euler_cromer = euler_cromer(t, plot=False)
-x_frog_jump, v_frog_jump = frog_jump(t, plot=False)
-x_verlet, v_verlet = verlet(t, plot=False)
-x_velocity_verlet, v_velocity_verlet = velocity_verlet(t, plot=False)
-x_biman, v_biman = biman(t, plot=False)
 
-def phase_space_distance(x_true, v_true, x_sim, v_sim):
-    dx = x_true - x_sim
-    dv = v_true - v_sim
-    dist = np.sqrt(dx**2 + dv**2)
-    return dist
+def phase_space_dist(x_true, v_true, x_sim, v_sim):
+    dx = np.linalg.norm(x_true - x_sim)
+    dv = np.linalg.norm(v_true - v_sim)
+    return dx + dv
 
-dist_euler = phase_space_distance(x_true, v_true, x_euler, v_euler)
-dist_euler_cromer = phase_space_distance(x_true, v_true, x_euler_cromer, v_euler_cromer)
-dist_frog_jump = phase_space_distance(x_true, v_true, x_frog_jump, v_frog_jump)
-dist_verlet = phase_space_distance(x_true, v_true, x_verlet, v_verlet)
-dist_velocity_verlet = phase_space_distance(x_true, v_true, x_velocity_verlet, v_velocity_verlet)
-dist_biman = phase_space_distance(x_true, v_true, x_biman, v_biman)
+dist_euler = []
+dist_euler_cromer = []
+dist_frog_jump = []
+dist_verlet = []
+dist_velocity_verlet = []
+dist_biman = []
 
-sample_rate = 100
-t_sampled = t[::sample_rate]
-dist_euler_cromer_sampled = dist_euler_cromer[::sample_rate]
-dist_frog_jump_sampled = dist_frog_jump[::sample_rate]
-dist_verlet_sampled = dist_verlet[::sample_rate]
-dist_velocity_verlet_sampled = dist_velocity_verlet[::sample_rate]
-dist_biman_sampled = dist_biman[::sample_rate]
+for h_i in h:
+    x_euler, v_euler = euler(t, h=h_i, plot=False)
+    x_euler_cromer, v_euler_cromer = euler_cromer(t, h=h_i, plot=False)
+    x_frog_jump, v_frog_jump = frog_jump(t, h=h_i, plot=False)
+    x_verlet, v_verlet = verlet(t, h=h_i, plot=False)
+    x_velocity_verlet, v_velocity_verlet = velocity_verlet(t, h=h_i, plot=False)
+    x_biman, v_biman = biman(t, h=h_i, plot=False)
+    
+    dist_euler.append(phase_space_dist(x_true, v_true, x_euler, v_euler))
+    dist_euler_cromer.append(phase_space_dist(x_true, v_true, x_euler_cromer, v_euler_cromer))
+    dist_frog_jump.append(phase_space_dist(x_true, v_true, x_frog_jump, v_frog_jump))
+    dist_verlet.append(phase_space_dist(x_true, v_true, x_verlet, v_verlet))
+    dist_velocity_verlet.append(phase_space_dist(x_true, v_true, x_velocity_verlet, v_velocity_verlet))
+    dist_biman.append(phase_space_dist(x_true, v_true, x_biman, v_biman))
 
 plt.figure(figsize=(12, 6))
-plt.plot(t_sampled, dist_euler_cromer_sampled, label='Euler-Cromer')
-plt.plot(t_sampled, dist_frog_jump_sampled, label='Frog Jump')
-plt.plot(t_sampled, dist_verlet_sampled, label='Verlet')
-plt.plot(t_sampled, dist_velocity_verlet_sampled, label='Velocity Verlet')
-plt.plot(t_sampled, dist_biman_sampled, label='Biman')
-plt.xlabel('Time (s)')
-plt.ylabel('Phase Space Distance')
-plt.title('Algorithm Errors')
+# plt.plot(h, dist_euler, label='Euler')
+plt.plot(h, dist_euler_cromer, label='Euler-Cromer')
+plt.plot(h, dist_frog_jump, label='Frog Jump')
+plt.plot(h, dist_verlet, label='Verlet')
+plt.plot(h, dist_velocity_verlet, label='Velocity Verlet')
+plt.plot(h, dist_biman, label='Biman')
+plt.xlabel('h')
+plt.ylabel('Error')
+plt.title('Algorithm Errors vs Time')
 plt.legend()
 plt.grid(True)
 plt.show()

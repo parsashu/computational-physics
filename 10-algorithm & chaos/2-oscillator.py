@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 k = 1
 m = 1
 T = 500
-h = 0.01
+h = 0.5
 n_steps = int(T / h)
 
 
@@ -142,8 +142,8 @@ def verlet():
     plt.legend()
     plt.grid(True)
     plt.show()
-    
-    
+
+
 # Velocity Verlet
 def velocity_verlet():
     t = np.linspace(0, T, n_steps)
@@ -153,10 +153,12 @@ def velocity_verlet():
     x[0] = 1
     v[0] = 0
 
-    for i in range(1, n_steps - 1):
+    for i in range(n_steps - 1):
         a = -k / m * x[i]
-        x[i + 1] = 2 * x[i] - x[i - 1] + a * h**2
-        v[i + 1] = (x[i + 1] - x[i]) / (2 * h)
+        x[i + 1] = x[i] + v[i] * h + 0.5 * a * h**2
+
+        a_new = -k / m * x[i + 1]
+        v[i + 1] = v[i] + 0.5 * (a + a_new) * h
 
     plt.plot(t, x, label="Velocity Verlet")
     plt.xlabel("Time (s)")
@@ -176,8 +178,49 @@ def velocity_verlet():
     plt.show()
 
 
+# Biman
+def biman():
+    t = np.linspace(0, T, n_steps)
+    x = np.zeros(n_steps)
+    v = np.zeros(n_steps)
+
+    x[0] = 1
+    v[0] = 0
+
+    # First step using Euler
+    x[1] = x[0] + v[0] * h
+    a1 = -k / m * x[1]
+    v[1] = v[0] + a1 * h
+
+    for i in range(1, n_steps - 1):
+        a_old = -k / m * x[i - 1]
+        a = -k / m * x[i]
+        x[i + 1] = x[i] + v[i] * h + (4 * a - a_old) * h**2 / 6
+
+        a_new = -k / m * x[i + 1]
+        v[i + 1] = v[i] + (2 * a_new + 5 * a - a_old) * h / 6
+
+    plt.plot(t, x, label="Biman")
+    plt.xlabel("Time (s)")
+    plt.ylabel("X (m)")
+    plt.title(f"Harmonic Oscillator using Biman (h = {h}s)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    plt.figure()
+    plt.plot(x, v, label="Phase Space")
+    plt.xlabel("Position (m)")
+    plt.ylabel("Velocity (m/s)")
+    plt.title(f"Phase Space Biman (h = {h}s)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
 # euler()
 # euler_cromer()
 # frog_jump()
 # verlet()
-velocity_verlet()
+# velocity_verlet()
+biman()

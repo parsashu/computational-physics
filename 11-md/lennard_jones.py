@@ -6,10 +6,10 @@ import numpy as np
 random.seed(42)
 n_steps = 10000
 radius = 6
-m = 1
-v_max = 1
-sigma = 1
-epsilon = 1
+m = 1.0
+v_max = 100
+sigma = 50
+epsilon = 0.001
 k_B = 1
 dt = 0.01
 
@@ -25,28 +25,33 @@ n_particles = 100
 
 
 class Particle:
-    def __init__(self, x, y, v0_x, v0_y, fx, fy, radius, m, color):
+    def __init__(self, x, y, v0_x, v0_y, ax, ay, radius, m, color):
         self.x = x
         self.y = y
         self.radius = radius
         self.color = color
         self.vx = v0_x
         self.vy = v0_y
-        self.fx = fx
-        self.fy = fy
+        self.ax = ax
+        self.ay = ay
         self.m = m
 
     def move(self):
-        self.x += self.vx * dt
-        self.y += self.vy * dt
+        """
+        Velocity Verlet algorithm in 2D
+        """
+        self.x += self.vx * dt + 0.5 * self.ax * dt**2
+        self.y += self.vy * dt + 0.5 * self.ay * dt**2
+
+        ax_new, ay_new = F_tot(self) / self.m
+        self.vx += 0.5 * (self.ax + ax_new) * dt
+        self.vy += 0.5 * (self.ay + ay_new) * dt
+
+        self.ax, self.ay = ax_new, ay_new
 
         # Periodic boundary conditions
         self.x = self.x % w
         self.y = self.y % h
-
-    def apply_force(self, fx, fy):
-        self.vx += fx * dt / self.m
-        self.vy += fy * dt / self.m
 
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), self.radius)
@@ -71,25 +76,27 @@ def distance(x1, y1, x2, y2):
     return np.array([dx, dy])
 
 
-def F(r_vec):
+def F_ij(r_vec):
     r = np.linalg.norm(r_vec)
-    if r == 0:
-        return np.zeros_like(r_vec)
-    f = 24 * epsilon * (2 * (sigma / r) ** 12 - (sigma / r) ** 6) / r**2
+    min_distance = 2 * radius
+    if r < min_distance:
+        f = 1000 * epsilon * (min_distance - r) / r
+    else:
+        f = 24 * epsilon * (2 * (sigma / r) ** 12 - (sigma / r) ** 6) / r**2
     f_vec = f * r_vec / r
     return f_vec
 
 
-def velocity_verlet(x_old, v_old, dt=dt):
-    """
-    Velocity Verlet algorithm in 1D
-    """
-    a = F(x_old) / m
-    x_new = x_old + v_old * dt + 0.5 * a * dt**2
-
-    a_new = F(x_new) / m
-    v_new = v_old + 0.5 * (a + a_new) * dt
-    return x_new, v_new
+def F_tot(particle):
+    fx = 0
+    fy = 0
+    for other in particles:
+        if other != particle:
+            r_vec = distance(particle.x, particle.y, other.x, other.y)
+            f_vec = F_ij(r_vec)
+            fx += f_vec[0]
+            fy += f_vec[1]
+    return np.array([fx, fy])
 
 
 # Init particles
@@ -137,23 +144,7 @@ while running and i < n_steps:
     for particle in particles:
         particle.draw(screen)
 
-    # Calc forces
-    for particle in particles:
-        fx = 0
-        fy = 0
-        for other in particles:
-            if other != particle:
-                r_vec = distance(particle.x, particle.y, other.x, other.y)
-                f_vec = F(r_vec)
-                fx += f_vec[0]
-                fy += f_vec[1]
-        particle.apply_force(fx, fy)
-
     # Update positions
-    for particle in particles:
-        particle.x, particle.vx = velocity_verlet(particle.x, particle.vx)
-        particle.y, particle.vy = velocity_verlet(particle.y, particle.vy)
-
     for particle in particles:
         particle.move()
 

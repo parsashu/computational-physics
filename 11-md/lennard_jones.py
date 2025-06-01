@@ -4,14 +4,16 @@ import numpy as np
 
 
 random.seed(42)
+n_particles = 100
 n_steps = 10000
 radius = 6
-m = 1.0
-v_max = 100
-sigma = 50
-epsilon = 0.001
+r_cutoff = 10000000 * radius
+m = 1
+v_max = 1e5
+sigma = 300
+epsilon = 1e-1
 k_B = 1
-dt = 0.01
+dt = 1e-5
 
 pygame.init()
 w, h = 1550, 880
@@ -21,7 +23,6 @@ pygame.display.set_caption("Lennard Jones Simulation")
 
 # Yellow, Blue, Pink, Green
 particle_colors = [(255, 255, 0), (0, 255, 255), (255, 0, 255), (0, 255, 0)]
-n_particles = 100
 
 
 class Particle:
@@ -78,11 +79,9 @@ def distance(x1, y1, x2, y2):
 
 def F_ij(r_vec):
     r = np.linalg.norm(r_vec)
-    min_distance = 2 * radius
-    if r < min_distance:
-        f = 1000 * epsilon * (min_distance - r) / r
-    else:
-        f = 24 * epsilon * (2 * (sigma / r) ** 12 - (sigma / r) ** 6) / r**2
+    if r > r_cutoff:
+        return np.zeros(2)
+    f = -24 * epsilon * (2 * (sigma / r) ** 12 - (sigma / r) ** 6) / r**2
     f_vec = f * r_vec / r
     return f_vec
 

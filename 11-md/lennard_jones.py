@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 
 random.seed(42)
 n_particles = 100
-n_steps = 1000
-radius = 6
+n_steps = 10000
 m = 1
-v_max = 1
-sigma = 40
-r_cutoff = 10 * sigma
-epsilon = 10
+v_max = 10
+sigma = 100
+radius = 10
+r_cutoff = 10000 * sigma
+epsilon = 30
 k_B = 1
-dt = 1
+dt = 0.1
 
 pygame.init()
 # w, h = 1550, 880
@@ -100,6 +100,14 @@ def F_tot(particle):
     return np.array([fx, fy])
 
 
+def n_particles_left_side(particles):
+    n = 0
+    for particle in particles:
+        if particle.x < w / 2:
+            n += 1
+    return n
+
+
 def kinetic_energy(particles):
     """
     Calculate the total kinetic energy of the system
@@ -132,9 +140,6 @@ def potential_energy(particles):
 particles = []
 v0x_list = np.zeros(n_particles)
 v0y_list = np.zeros(n_particles)
-spacing = int(np.sqrt((w * h) / n_particles))
-rows = int(np.sqrt(n_particles * h / w))
-cols = int(n_particles / rows)
 
 for i in range(n_particles):
     v0x_list[i] = random.uniform(-v_max, v_max)
@@ -147,6 +152,10 @@ v0x_list = v0x_list - mean_v0x
 v0y_list = v0y_list - mean_v0y
 
 i = 0
+rows = int(np.sqrt(n_particles * h / w))
+cols = int(n_particles / rows)
+spacing = int(np.sqrt((w * h) / n_particles))
+
 for row in range(rows):
     for col in range(cols // 2):
         x0 = col * spacing + spacing // 2
@@ -155,7 +164,7 @@ for row in range(rows):
         v0y = v0y_list[i]
         i += 1
 
-        color = particle_colors[(row + col) % len(particle_colors)]
+        color = particle_colors[i % len(particle_colors)]
         particles.append(Particle(x0, y0, v0x, v0y, 0, 0, radius, m, color))
 
 
@@ -167,6 +176,8 @@ i = 0
 energy_list = []
 kinetic_list = []
 potential_list = []
+n_left_list = []
+velocity_list = []
 
 while running and i < n_steps:
     for event in pygame.event.get():
@@ -177,6 +188,12 @@ while running and i < n_steps:
     for particle in particles:
         particle.draw(screen)
 
+    # Store current velocities
+    current_velocities = []
+    for particle in particles:
+        current_velocities.append(np.array([particle.vx, particle.vy]))
+    velocity_list.append(current_velocities)
+
     # Calculate energy
     kinetic = kinetic_energy(particles)
     potential = potential_energy(particles)
@@ -184,6 +201,10 @@ while running and i < n_steps:
     energy_list.append(energy)
     kinetic_list.append(kinetic)
     potential_list.append(potential)
+
+    # Number of particles on the right side
+    n_left = n_particles_left_side(particles)
+    n_left_list.append(n_left)
 
     # Update positions
     for particle in particles:
@@ -196,14 +217,73 @@ while running and i < n_steps:
 pygame.quit()
 
 
-# Calculate and plot energy
+# plt.figure(figsize=(10, 6))
+# plt.plot(range(i), n_left_list, "b-", label="Particles on Left Side")
+# plt.axhline(y=50, color="r", linestyle="--", label="Equilibrium")
+# plt.xlabel("Time Step")
+# plt.ylabel("Number of Particles")
+# plt.title("Number of Particles on Left Side Over Time")
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+# plt.figure(figsize=(10, 6))
+# plt.plot(range(i), energy_list, "b-", label="Total Energy")
+# plt.plot(range(i), kinetic_list, "r-", label="Kinetic Energy")
+# plt.plot(range(i), potential_list, "g-", label="Potential Energy")
+# plt.xlabel("Time Step")
+# plt.ylabel("Energy")
+# plt.title("System Energy Over Time")
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+
+def Vacf(velocity_list, max_tau=None):
+    if max_tau is None:
+        max_tau = len(velocity_list) // 2
+
+    vacf = np.zeros(max_tau)
+    n_particles = len(velocity_list[0])
+
+    for tau in range(max_tau):
+        correlation = 0
+        count = 0
+
+        for t in range(len(velocity_list) - tau):
+            for p in range(n_particles):
+                v0 = velocity_list[t][p]
+                vt = velocity_list[t + tau][p]
+                correlation += np.dot(v0, vt)
+                count += 1
+
+        if count > 0:
+            vacf[tau] = correlation / count
+
+    return vacf
+
+
+def Equilibration_time(vacf, threshold=1 / np.e):
+    for t, value in enumerate(vacf):
+        if abs(value) < threshold:
+            return t
+    return len(vacf)
+
+
+vacf = Vacf(velocity_list)
+equilibration_time = Equilibration_time(vacf)
+
 plt.figure(figsize=(10, 6))
-plt.plot(range(n_steps), energy_list, "b-", label="Total Energy")
-plt.plot(range(n_steps), kinetic_list, "r-", label="Kinetic Energy")
-plt.plot(range(n_steps), potential_list, "g-", label="Potential Energy")
-plt.xlabel("Time Step")
-plt.ylabel("Energy")
-plt.title("System Energy Over Time")
+plt.plot(range(len(vacf)), vacf, "b-", label="VACF")
+plt.axvline(
+    x=equilibration_time,
+    color="r",
+    linestyle="--",
+    label=f"Equilibration Time: {equilibration_time} steps",
+)
+plt.xlabel("Time Step (τ)")
+plt.ylabel("Velocity Autocorrelation")
+plt.title("Velocity Autocorrelation Function")
 plt.legend()
 plt.grid(True)
 plt.show()

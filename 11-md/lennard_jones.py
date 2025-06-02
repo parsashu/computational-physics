@@ -1,22 +1,24 @@
 import pygame
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 random.seed(42)
 n_particles = 100
-n_steps = 10000
+n_steps = 1000
 radius = 6
-r_cutoff = 10000000 * radius
 m = 1
-v_max = 1e5
-sigma = 300
-epsilon = 1e-1
+v_max = 1
+sigma = 40
+r_cutoff = 10 * sigma
+epsilon = 10
 k_B = 1
-dt = 1e-5
+dt = 1
 
 pygame.init()
-w, h = 1550, 880
+# w, h = 1550, 880
+w, h = 1000, 700
 background_color = (11, 10, 34)
 screen = pygame.display.set_mode((w, h))
 pygame.display.set_caption("Lennard Jones Simulation")
@@ -98,6 +100,34 @@ def F_tot(particle):
     return np.array([fx, fy])
 
 
+def kinetic_energy(particles):
+    """
+    Calculate the total kinetic energy of the system
+    """
+    kinetic = 0
+    for particle in particles:
+        v_squared = particle.vx**2 + particle.vy**2
+        kinetic += 0.5 * particle.m * v_squared
+    return kinetic
+
+
+def potential_energy(particles):
+    """
+    Calculate the total potential energy of the system
+    """
+    potential = 0
+    for i in range(len(particles)):
+        for j in range(i + 1, len(particles)):
+            r_vec = distance(
+                particles[i].x, particles[i].y, particles[j].x, particles[j].y
+            )
+            r = np.linalg.norm(r_vec)
+
+            if r < r_cutoff:
+                potential += 4 * epsilon * ((sigma / r) ** 12 - (sigma / r) ** 6)
+    return potential
+
+
 # Init particles
 particles = []
 v0x_list = np.zeros(n_particles)
@@ -134,6 +164,10 @@ running = True
 
 # Main Loop
 i = 0
+energy_list = []
+kinetic_list = []
+potential_list = []
+
 while running and i < n_steps:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -142,6 +176,14 @@ while running and i < n_steps:
     screen.fill(background_color)
     for particle in particles:
         particle.draw(screen)
+
+    # Calculate energy
+    kinetic = kinetic_energy(particles)
+    potential = potential_energy(particles)
+    energy = kinetic + potential
+    energy_list.append(energy)
+    kinetic_list.append(kinetic)
+    potential_list.append(potential)
 
     # Update positions
     for particle in particles:
@@ -152,3 +194,16 @@ while running and i < n_steps:
     i += 1
 
 pygame.quit()
+
+
+# Calculate and plot energy
+plt.figure(figsize=(10, 6))
+plt.plot(range(n_steps), energy_list, "b-", label="Total Energy")
+plt.plot(range(n_steps), kinetic_list, "r-", label="Kinetic Energy")
+plt.plot(range(n_steps), potential_list, "g-", label="Potential Energy")
+plt.xlabel("Time Step")
+plt.ylabel("Energy")
+plt.title("System Energy Over Time")
+plt.legend()
+plt.grid(True)
+plt.show()

@@ -9,12 +9,12 @@ n_particles = 100
 n_steps = 10000
 m = 1
 v_max = 10
-sigma = 50
+sigma = 40
 radius = 10
 r_cutoff = 10 * sigma
-epsilon = 30
+epsilon = 10
 k_B = 1
-dt = 0.1
+dt = 0.01
 
 pygame.init()
 # w, h = 1550, 880
@@ -39,14 +39,14 @@ class Particle:
         self.ay = ay
         self.m = m
 
-    def move(self):
+    def move(self, force_matrix, particles):
         """
         Velocity Verlet algorithm in 2D
         """
         self.x += self.vx * dt + 0.5 * self.ax * dt**2
         self.y += self.vy * dt + 0.5 * self.ay * dt**2
 
-        ax_new, ay_new = F_tot(self) / self.m
+        ax_new, ay_new = F_tot(force_matrix, particles, self) / self.m
         self.vx += 0.5 * (self.ax + ax_new) * dt
         self.vy += 0.5 * (self.ay + ay_new) * dt
 
@@ -83,20 +83,27 @@ def F_ij(r_vec):
     r = np.linalg.norm(r_vec)
     if r > r_cutoff:
         return np.zeros(2)
-    f = -24 * epsilon * (2 * (sigma / r) ** 12 - (sigma / r) ** 6) / r**2
+    f = -24 * epsilon * (2 * (sigma / r) ** 12 - (sigma / r) ** 6) / r
     f_vec = f * r_vec / r
     return f_vec
 
 
-def F_tot(particle):
-    fx = 0
-    fy = 0
-    for other in particles:
-        if other != particle:
-            r_vec = distance(particle.x, particle.y, other.x, other.y)
-            f_vec = F_ij(r_vec)
-            fx += f_vec[0]
-            fy += f_vec[1]
+def Force_matrix(particles):
+    force_matrix = np.zeros((len(particles), len(particles), 2))
+    for i in range(len(particles)):
+        for j in range(i + 1, len(particles)):
+            r_vec = distance(
+                particles[i].x, particles[i].y, particles[j].x, particles[j].y
+            )
+            force_matrix[i, j] = F_ij(r_vec)
+            force_matrix[j, i] = -force_matrix[i, j]
+    return force_matrix
+
+
+def F_tot(force_matrix, particles, particle):
+    particle_index = particles.index(particle)
+    fx = np.sum(force_matrix[particle_index, :, 0])
+    fy = np.sum(force_matrix[particle_index, :, 1])
     return np.array([fx, fy])
 
 
@@ -207,8 +214,9 @@ while running and i < n_steps:
     n_left_list.append(n_left)
 
     # Update positions
+    force_matrix = Force_matrix(particles)
     for particle in particles:
-        particle.move()
+        particle.move(force_matrix, particles)
 
     pygame.display.flip()
     clock.tick(60)

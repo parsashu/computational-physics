@@ -8,17 +8,17 @@ random.seed(42)
 n_particles = 100
 n_steps = 10000
 m = 1
-v_max = 10
-sigma = 40
-radius = 10
+v_max = 0.001
+sigma = 50
+radius = 11
 r_cutoff = 10 * sigma
-epsilon = 10
+epsilon = 30
 k_B = 1
-dt = 0.01
+dt = 0.1
 
 pygame.init()
 # w, h = 1550, 880
-w, h = 1000, 700
+w, h = 1200, 700
 background_color = (11, 10, 34)
 screen = pygame.display.set_mode((w, h))
 pygame.display.set_caption("Lennard Jones Simulation")
@@ -39,14 +39,14 @@ class Particle:
         self.ay = ay
         self.m = m
 
-    def move(self, force_matrix, particles):
+    def move(self):
         """
         Velocity Verlet algorithm in 2D
         """
         self.x += self.vx * dt + 0.5 * self.ax * dt**2
         self.y += self.vy * dt + 0.5 * self.ay * dt**2
 
-        ax_new, ay_new = F_tot(force_matrix, particles, self) / self.m
+        ax_new, ay_new = F_tot(self) / self.m
         self.vx += 0.5 * (self.ax + ax_new) * dt
         self.vy += 0.5 * (self.ay + ay_new) * dt
 
@@ -88,22 +88,15 @@ def F_ij(r_vec):
     return f_vec
 
 
-def Force_matrix(particles):
-    force_matrix = np.zeros((len(particles), len(particles), 2))
-    for i in range(len(particles)):
-        for j in range(i + 1, len(particles)):
-            r_vec = distance(
-                particles[i].x, particles[i].y, particles[j].x, particles[j].y
-            )
-            force_matrix[i, j] = F_ij(r_vec)
-            force_matrix[j, i] = -force_matrix[i, j]
-    return force_matrix
-
-
-def F_tot(force_matrix, particles, particle):
-    particle_index = particles.index(particle)
-    fx = np.sum(force_matrix[particle_index, :, 0])
-    fy = np.sum(force_matrix[particle_index, :, 1])
+def F_tot(particle):
+    fx = 0
+    fy = 0
+    for other in particles:
+        if other != particle:
+            r_vec = distance(particle.x, particle.y, other.x, other.y)
+            f_vec = F_ij(r_vec)
+            fx += f_vec[0]
+            fy += f_vec[1]
     return np.array([fx, fy])
 
 
@@ -143,7 +136,7 @@ def potential_energy(particles):
     return potential
 
 
-# Init particles
+# Initial velocities
 particles = []
 v0x_list = np.zeros(n_particles)
 v0y_list = np.zeros(n_particles)
@@ -158,27 +151,51 @@ mean_v0y = np.mean(v0y_list)
 v0x_list = v0x_list - mean_v0x
 v0y_list = v0y_list - mean_v0y
 
-i = 0
-rows = int(np.sqrt(2 * n_particles * h / w))
-cols = int(np.sqrt(2 * n_particles * w / h))
-spacing = int(np.sqrt((w * h) / (2 * n_particles)))
+# Initial positions
+left_width = w // 2
+min_spacing = 3 * radius
 
+max_cols = left_width // min_spacing
+max_rows = h // min_spacing
+
+if max_cols * max_rows >= n_particles:
+    cols = min(max_cols, int(np.ceil(np.sqrt(n_particles * left_width / h))))
+    rows = int(np.ceil(n_particles / cols))
+else:
+    cols = max_cols
+    rows = max_rows
+
+spacing_x = left_width // cols if cols > 0 else min_spacing
+spacing_y = h // rows if rows > 0 else min_spacing
+
+spacing_x = max(spacing_x, min_spacing)
+spacing_y = max(spacing_y, min_spacing)
+
+i = 0
 for row in range(rows):
-    for col in range(cols // 2):
-        x0 = col * spacing + spacing // 2
-        y0 = row * spacing + spacing // 2
+    for col in range(cols):
+        if i >= n_particles:
+            break
+
+        x0 = col * spacing_x + spacing_x // 2
+        y0 = row * spacing_y + spacing_y // 2
+
+        x0 = max(radius, min(x0, left_width - radius))
+        y0 = max(radius, min(y0, h - radius))
+
         v0x = v0x_list[i]
         v0y = v0y_list[i]
-        i += 1
 
         color = particle_colors[i % len(particle_colors)]
         particles.append(Particle(x0, y0, v0x, v0y, 0, 0, radius, m, color))
+        i += 1
+
+    if i >= n_particles:
+        break
 
 
 clock = pygame.time.Clock()
 running = True
-
-# Main Loop
 i = 0
 energy_list = []
 kinetic_list = []
@@ -186,6 +203,7 @@ potential_list = []
 n_left_list = []
 velocity_list = []
 
+# Main Loop
 while running and i < n_steps:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -214,9 +232,8 @@ while running and i < n_steps:
     n_left_list.append(n_left)
 
     # Update positions
-    force_matrix = Force_matrix(particles)
     for particle in particles:
-        particle.move(force_matrix, particles)
+        particle.move()
 
     pygame.display.flip()
     clock.tick(60)

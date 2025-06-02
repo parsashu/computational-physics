@@ -9,9 +9,9 @@ n_particles = 100
 n_steps = 10000
 m = 1
 v_max = 10
-sigma = 100
+sigma = 50
 radius = 10
-r_cutoff = 10000 * sigma
+r_cutoff = 10 * sigma
 epsilon = 30
 k_B = 1
 dt = 0.1
@@ -152,9 +152,9 @@ v0x_list = v0x_list - mean_v0x
 v0y_list = v0y_list - mean_v0y
 
 i = 0
-rows = int(np.sqrt(n_particles * h / w))
-cols = int(n_particles / rows)
-spacing = int(np.sqrt((w * h) / n_particles))
+rows = int(np.sqrt(2 * n_particles * h / w))
+cols = int(np.sqrt(2 * n_particles * w / h))
+spacing = int(np.sqrt((w * h) / (2 * n_particles)))
 
 for row in range(rows):
     for col in range(cols // 2):
@@ -217,15 +217,15 @@ while running and i < n_steps:
 pygame.quit()
 
 
-# plt.figure(figsize=(10, 6))
-# plt.plot(range(i), n_left_list, "b-", label="Particles on Left Side")
-# plt.axhline(y=50, color="r", linestyle="--", label="Equilibrium")
-# plt.xlabel("Time Step")
-# plt.ylabel("Number of Particles")
-# plt.title("Number of Particles on Left Side Over Time")
-# plt.legend()
-# plt.grid(True)
-# plt.show()
+plt.figure(figsize=(10, 6))
+plt.plot(range(i), n_left_list, "b-", label="Particles on Left Side")
+plt.axhline(y=50, color="r", linestyle="--", label="Equilibrium")
+plt.xlabel("Time Step")
+plt.ylabel("Number of Particles")
+plt.title("Number of Particles on Left Side Over Time")
+plt.legend()
+plt.grid(True)
+plt.show()
 
 # plt.figure(figsize=(10, 6))
 # plt.plot(range(i), energy_list, "b-", label="Total Energy")
@@ -270,20 +270,20 @@ def Equilibration_time(vacf, threshold=1 / np.e):
     return len(vacf)
 
 
-vacf = Vacf(velocity_list)
-equilibration_time = Equilibration_time(vacf)
+# vacf = Vacf(velocity_list)
+# equilibration_time = Equilibration_time(vacf)
 
-plt.figure(figsize=(10, 6))
-plt.plot(range(len(vacf)), vacf, "b-", label="VACF")
-plt.axvline(
-    x=equilibration_time,
-    color="r",
-    linestyle="--",
-    label=f"Equilibration Time: {equilibration_time} steps",
-)
-plt.xlabel("Time Step (τ)")
-plt.ylabel("Velocity Autocorrelation")
-plt.title("Velocity Autocorrelation Function")
-plt.legend()
-plt.grid(True)
-plt.show()
+# plt.figure(figsize=(10, 6))
+# plt.plot(range(len(vacf)), vacf, "b-", label="VACF")
+# plt.axvline(
+#     x=equilibration_time,
+#     color="r",
+#     linestyle="--",
+#     label=f"Equilibration Time: {equilibration_time} steps",
+# )
+# plt.xlabel("Time Step (τ)")
+# plt.ylabel("Velocity Autocorrelation")
+# plt.title("Velocity Autocorrelation Function")
+# plt.legend()
+# plt.grid(True)
+# plt.show()

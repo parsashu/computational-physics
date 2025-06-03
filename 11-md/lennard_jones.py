@@ -6,19 +6,18 @@ from tqdm import tqdm
 
 
 random.seed(42)
-N = 50
-n_steps = 5000
+N = 49
+n_steps = 100000
 m = 1
-v_max = 50
-sigma = 100
+v_max = 5
+sigma = 30
 radius = 11
-r_cutoff = 10 * sigma
-epsilon = 30
+r_cutoff = 2.5 * sigma
+epsilon = 50
 k_B = 1
-dt = 0.01
+dt = 0.1
 
 pygame.init()
-# w, h = 1550, 880
 w, h = 1200, 700
 background_color = (11, 10, 34)
 screen = pygame.display.set_mode((w, h))
@@ -77,15 +76,6 @@ def distance(r1, r2):
     return np.array([dx, dy])
 
 
-# def distance_matrix(particles):
-#     distance_matrix = np.zeros((N, N, 2))
-#     for i in range(N):
-#         for j in range(i + 1, N):
-#             distance_matrix[i, j] = distance(particles[j].r, particles[i].r)
-#             distance_matrix[j, i] = -distance_matrix[i, j]
-#     return distance_matrix
-
-
 def F_ij(d):
     d_norm = np.linalg.norm(d)
     if d_norm > r_cutoff:
@@ -103,23 +93,6 @@ def F_tot(particle):
             f = F_ij(d)
             f_tot += f
     return f_tot
-
-
-# def Force_matrix(particles):
-#     force_matrix = np.zeros((N, N, 2))
-#     dist_matrix = distance_matrix(particles)
-#     for i in range(N):
-#         for j in range(i + 1, N):
-#             d = dist_matrix[i, j]
-#             force_matrix[i, j] = F_ij(d)
-#             force_matrix[j, i] = -force_matrix[i, j]
-#     return force_matrix
-
-
-# def F_tot(force_matrix, particle):
-#     particle_index = particles.index(particle)
-#     f_tot = np.sum(force_matrix[particle_index, :, :], axis=0)
-#     return f_tot
 
 
 def n_particles_left_side(particles):
@@ -157,11 +130,68 @@ def potential_energy(particles):
     return potential
 
 
-def temperature(kinetic_list):
+def Vacf(velocity_list, max_tau=None):
+    """
+    Calculate velocity autocorrelation function (VACF)
+    """
+    if max_tau is None:
+        max_tau = len(velocity_list) // 2
+
+    vacf = np.zeros(max_tau)
+    for tau in tqdm(range(max_tau), desc="Calculating VACF"):
+        correlation = 0
+        count = 0
+
+        for t in range(len(velocity_list) - tau):
+            for p in range(N):
+                v0 = velocity_list[t][p]
+                vt = velocity_list[t + tau][p]
+                correlation += np.dot(v0, vt)
+                count += 1
+
+        if count > 0:
+            vacf[tau] = correlation / count
+
+    return vacf
+
+
+def diffusion(vacf, dt):
+    """
+    Calculate diffusion coefficient by integrating VACF
+    """
+    D = 0.25 * dt * np.trapz(vacf)
+    return D
+
+
+def Equilibration_time(vacf, threshold=1 / np.e):
+    for t, value in enumerate(vacf):
+        if abs(value) < threshold:
+            return t
+    return len(vacf)
+
+
+def temperature(kinetic):
     """
     Calculate the temperature of the system
     """
-    return kinetic_list / (N * k_B)
+    return kinetic / (N * k_B)
+
+
+def pressure(particles, temp):
+    """
+    Calculate the pressure of the system
+    """
+    virial = 0
+    for i in range(N):
+        for j in range(i + 1, N):
+            d = distance(particles[i].r, particles[j].r)
+            d_norm = np.linalg.norm(d)
+            if d_norm < r_cutoff:
+                F = F_ij(d)
+                virial += np.dot(F, d)
+    V = w * h
+    P = (N * k_B * temp + 0.5 * virial) / V
+    return P
 
 
 # Initial velocities
@@ -219,7 +249,6 @@ for row in range(rows):
         break
 
 # Initial accelerations
-# force_matrix = Force_matrix(particles)
 for particle in particles:
     particle.a = F_tot(particle) / particle.m
 
@@ -230,6 +259,8 @@ kinetic_list = []
 potential_list = []
 n_left_list = []
 velocity_list = []
+temp_list = []
+pres_list = []
 running = True
 
 # Main Loop
@@ -258,14 +289,19 @@ for i in tqdm(range(n_steps), desc="MD Simulation", unit="steps"):
     # n_left = n_particles_left_side(particles)
     # n_left_list.append(n_left)
 
-    # Store current velocities
-    current_velocities = []
-    for particle in particles:
-        current_velocities.append(particle.v)
-    velocity_list.append(current_velocities)
+    # VACF
+    # current_velocities = []
+    # for particle in particles:
+    #     current_velocities.append(particle.v)
+    # velocity_list.append(current_velocities)
+
+    # Temperature and pressure
+    # temp = temperature(kinetic)
+    # pres = pressure(particles, temp)
+    # temp_list.append(temp)
+    # pres_list.append(pres)
 
     # Update positions
-    # force_matrix = Force_matrix(particles)
     for particle in particles:
         particle.move()
 
@@ -299,50 +335,61 @@ if len(energy_list) > 0:
     plt.show()
 
 
-def Vacf(velocity_list, max_tau=None):
-    if max_tau is None:
-        max_tau = len(velocity_list) // 2
+if len(pres_list) > 0:
+    equ_time = 1000
+    mean_pres = np.mean(pres_list[equ_time:])
+    plt.figure(figsize=(10, 6))
+    plt.plot(
+        range(len(pres_list)),
+        pres_list,
+        "r-",
+        label=f"Pressure (mean: {mean_pres:.4f})",
+    )
+    plt.axhline(y=mean_pres, color="g", linestyle="--", label="Mean Pressure")
+    plt.xlabel("Time Step")
+    plt.ylabel("Pressure")
+    plt.title("Pressure over Time")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-    vacf = np.zeros(max_tau)
-    for tau in tqdm(range(max_tau), desc="Calculating VACF"):
-        correlation = 0
-        count = 0
-
-        for t in range(len(velocity_list) - tau):
-            for p in range(N):
-                v0 = velocity_list[t][p]
-                vt = velocity_list[t + tau][p]
-                correlation += np.dot(v0, vt)
-                count += 1
-
-        if count > 0:
-            vacf[tau] = correlation / count
-
-    return vacf
-
-
-def Equilibration_time(vacf, threshold=1 / np.e):
-    for t, value in enumerate(vacf):
-        if abs(value) < threshold:
-            return t
-    return len(vacf)
+if len(temp_list) > 0:
+    equ_time = 1000
+    mean_temp = np.mean(temp_list[equ_time:])
+    plt.figure(figsize=(10, 6))
+    plt.plot(
+        range(len(temp_list)),
+        temp_list,
+        "b-",
+        label=f"Temperature (mean: {mean_temp:.4f})",
+    )
+    plt.axhline(y=mean_temp, color="g", linestyle="--", label="Mean Temperature")
+    plt.xlabel("Time Step")
+    plt.ylabel("Temperature")
+    plt.title("Temperature over Time")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 if len(velocity_list) > 0:
-    vacf = Vacf(velocity_list)
-    equilibration_time = Equilibration_time(vacf)
+    vacf = Vacf(velocity_list, 1000)
+    equ_time = Equilibration_time(vacf)
+
+    # Calculate diffusion coefficient
+    D = diffusion(vacf, dt)
 
     plt.figure(figsize=(10, 6))
     plt.plot(range(len(vacf)), vacf, "b-", label="VACF")
     plt.axvline(
-        x=equilibration_time,
+        x=equ_time,
         color="r",
         linestyle="--",
-        label=f"Equilibration Time: {equilibration_time} steps",
+        label=f"Equilibration Time: {equ_time} steps",
     )
     plt.xlabel("Time Step (τ)")
     plt.ylabel("Velocity Autocorrelation")
-    plt.title("Velocity Autocorrelation Function")
+    plt.title(f"Velocity Autocorrelation Function\nDiffusion Coefficient D = {D:.4f}")
     plt.legend()
     plt.grid(True)
     plt.show()

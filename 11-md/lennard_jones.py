@@ -9,7 +9,7 @@ random.seed(42)
 n_particles = 100
 n_steps = 10000
 m = 1
-v_max = 50
+v_max = 10
 sigma = 50
 radius = 11
 r_cutoff = 10 * sigma
@@ -82,7 +82,7 @@ def distance(r1, r2):
 #     for i in range(n_particles):
 #         for j in range(i + 1, n_particles):
 #             distance_matrix[i, j] = distance(
-#                 particles[i].x, particles[i].y, particles[j].x, particles[j].y
+#                 particles[i].r, particles[j].r
 #             )
 #             distance_matrix[j, i] = -distance_matrix[i, j]
 #     return distance_matrix
@@ -112,17 +112,16 @@ def F_tot(particle):
 #     dist_matrix = distance_matrix(particles)
 #     for i in range(n_particles):
 #         for j in range(i + 1, n_particles):
-#             r_vec = dist_matrix[i, j]
-#             force_matrix[i, j] = F_ij(r_vec)
+#             d = dist_matrix[i, j]
+#             force_matrix[i, j] = F_ij(d)
 #             force_matrix[j, i] = -force_matrix[i, j]
 #     return force_matrix
 
 
 # def F_tot(force_matrix, particle):
 #     particle_index = particles.index(particle)
-#     fx = np.sum(force_matrix[particle_index, :, 0])
-#     fy = np.sum(force_matrix[particle_index, :, 1])
-#     return np.array([fx, fy])
+#     f_tot = np.sum(force_matrix[particle_index, :, 0])
+#     return f_tot
 
 
 def n_particles_left_side(particles):
@@ -162,12 +161,10 @@ def potential_energy(particles):
 
 # Initial velocities
 particles = []
-v0x_list = np.random.uniform(-v_max, v_max, n_particles)
-v0y_list = np.random.uniform(-v_max, v_max, n_particles)
+v_list = np.random.uniform(-v_max, v_max, (2, n_particles))
 
 # Set Vcm = 0
-v0x_list -= np.mean(v0x_list)
-v0y_list -= np.mean(v0y_list)
+v_list -= np.mean(v_list, axis=1, keepdims=True)
 
 # Initial positions
 left_width = w // 2
@@ -201,15 +198,24 @@ for row in range(rows):
         x0 = max(radius, min(x0, left_width - radius))
         y0 = max(radius, min(y0, h - radius))
 
-        v0x = v0x_list[i]
-        v0y = v0y_list[i]
-
         color = particle_colors[i % len(particle_colors)]
-        particles.append(Particle(x0, y0, v0x, v0y, 0, 0, radius, m, color))
+        particles.append(
+            Particle(
+                np.array([x0, y0], dtype=np.float64),
+                v_list[:, i],
+                np.zeros(2, dtype=np.float64),
+                radius,
+                m,
+                color,
+            )
+        )
         i += 1
-
     if i >= n_particles:
         break
+
+# initial accelerations
+for particle in particles:
+    particle.a = F_tot(particle) / particle.m
 
 
 clock = pygame.time.Clock()
@@ -218,23 +224,21 @@ kinetic_list = []
 potential_list = []
 n_left_list = []
 velocity_list = []
+running = True
 
 # Main Loop
 for i in tqdm(range(n_steps), desc="MD Simulation", unit="steps"):
+    if not running:
+        break
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            running = False
             break
 
     screen.fill(background_color)
     for particle in particles:
         particle.draw(screen)
-
-    # Store current velocities
-    current_velocities = []
-    for particle in particles:
-        current_velocities.append(np.array([particle.vx, particle.vy]))
-    velocity_list.append(current_velocities)
 
     # Calculate energy
     kinetic = kinetic_energy(particles)
@@ -247,6 +251,12 @@ for i in tqdm(range(n_steps), desc="MD Simulation", unit="steps"):
     # Number of particles on the right side
     # n_left = n_particles_left_side(particles)
     # n_left_list.append(n_left)
+
+    # Store current velocities
+    # current_velocities = []
+    # for particle in particles:
+    #     current_velocities.append(particle.v)
+    # velocity_list.append(current_velocities)
 
     # Update positions
     # force_matrix = Force_matrix(particles)
@@ -261,7 +271,7 @@ pygame.quit()
 
 if len(n_left_list) > 0:
     plt.figure(figsize=(10, 6))
-    plt.plot(range(i), n_left_list, "b-", label="Particles on Left Side")
+    plt.plot(range(len(n_left_list)), n_left_list, "b-", label="Particles on Left Side")
     plt.axhline(y=50, color="r", linestyle="--", label="Equilibrium")
     plt.xlabel("Time Step")
     plt.ylabel("Number of Particles")
@@ -272,9 +282,9 @@ if len(n_left_list) > 0:
 
 if len(energy_list) > 0:
     plt.figure(figsize=(10, 6))
-    plt.plot(range(i), energy_list, "b-", label="Total Energy")
-    plt.plot(range(i), kinetic_list, "r-", label="Kinetic Energy")
-    plt.plot(range(i), potential_list, "g-", label="Potential Energy")
+    plt.plot(range(len(energy_list)), energy_list, "b-", label="Total Energy")
+    plt.plot(range(len(kinetic_list)), kinetic_list, "r-", label="Kinetic Energy")
+    plt.plot(range(len(potential_list)), potential_list, "g-", label="Potential Energy")
     plt.xlabel("Time Step")
     plt.ylabel("Energy")
     plt.title("System Energy Over Time")

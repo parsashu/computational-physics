@@ -6,14 +6,14 @@ from tqdm import tqdm
 
 
 random.seed(42)
-n_particles = 100
-n_steps = 10000
+N = 50
+n_steps = 5000
 m = 1
-v_max = 10
-sigma = 50
+v_max = 50
+sigma = 100
 radius = 11
 r_cutoff = 10 * sigma
-epsilon = 20
+epsilon = 30
 k_B = 1
 dt = 0.01
 
@@ -78,12 +78,10 @@ def distance(r1, r2):
 
 
 # def distance_matrix(particles):
-#     distance_matrix = np.zeros((n_particles, n_particles, 2))
-#     for i in range(n_particles):
-#         for j in range(i + 1, n_particles):
-#             distance_matrix[i, j] = distance(
-#                 particles[i].r, particles[j].r
-#             )
+#     distance_matrix = np.zeros((N, N, 2))
+#     for i in range(N):
+#         for j in range(i + 1, N):
+#             distance_matrix[i, j] = distance(particles[j].r, particles[i].r)
 #             distance_matrix[j, i] = -distance_matrix[i, j]
 #     return distance_matrix
 
@@ -108,10 +106,10 @@ def F_tot(particle):
 
 
 # def Force_matrix(particles):
-#     force_matrix = np.zeros((n_particles, n_particles, 2))
+#     force_matrix = np.zeros((N, N, 2))
 #     dist_matrix = distance_matrix(particles)
-#     for i in range(n_particles):
-#         for j in range(i + 1, n_particles):
+#     for i in range(N):
+#         for j in range(i + 1, N):
 #             d = dist_matrix[i, j]
 #             force_matrix[i, j] = F_ij(d)
 #             force_matrix[j, i] = -force_matrix[i, j]
@@ -120,7 +118,7 @@ def F_tot(particle):
 
 # def F_tot(force_matrix, particle):
 #     particle_index = particles.index(particle)
-#     f_tot = np.sum(force_matrix[particle_index, :, 0])
+#     f_tot = np.sum(force_matrix[particle_index, :, :], axis=0)
 #     return f_tot
 
 
@@ -147,8 +145,8 @@ def potential_energy(particles):
     Calculate the total potential energy of the system
     """
     potential = 0
-    for i in range(n_particles):
-        for j in range(i + 1, n_particles):
+    for i in range(N):
+        for j in range(i + 1, N):
             d = distance(particles[i].r, particles[j].r)
             d_norm = np.linalg.norm(d)
 
@@ -159,9 +157,16 @@ def potential_energy(particles):
     return potential
 
 
+def temperature(kinetic_list):
+    """
+    Calculate the temperature of the system
+    """
+    return kinetic_list / (N * k_B)
+
+
 # Initial velocities
 particles = []
-v_list = np.random.uniform(-v_max, v_max, (2, n_particles))
+v_list = np.random.uniform(-v_max, v_max, (2, N))
 
 # Set Vcm = 0
 v_list -= np.mean(v_list, axis=1, keepdims=True)
@@ -173,9 +178,9 @@ min_spacing = 3 * radius
 max_cols = left_width // min_spacing
 max_rows = h // min_spacing
 
-if max_cols * max_rows >= n_particles:
-    cols = min(max_cols, int(np.ceil(np.sqrt(n_particles * left_width / h))))
-    rows = int(np.ceil(n_particles / cols))
+if max_cols * max_rows >= N:
+    cols = min(max_cols, int(np.ceil(np.sqrt(N * left_width / h))))
+    rows = int(np.ceil(N / cols))
 else:
     cols = max_cols
     rows = max_rows
@@ -189,7 +194,7 @@ spacing_y = max(spacing_y, min_spacing)
 i = 0
 for row in range(rows):
     for col in range(cols):
-        if i >= n_particles:
+        if i >= N:
             break
 
         x0 = col * spacing_x + spacing_x // 2
@@ -210,10 +215,11 @@ for row in range(rows):
             )
         )
         i += 1
-    if i >= n_particles:
+    if i >= N:
         break
 
-# initial accelerations
+# Initial accelerations
+# force_matrix = Force_matrix(particles)
 for particle in particles:
     particle.a = F_tot(particle) / particle.m
 
@@ -241,22 +247,22 @@ for i in tqdm(range(n_steps), desc="MD Simulation", unit="steps"):
         particle.draw(screen)
 
     # Calculate energy
-    kinetic = kinetic_energy(particles)
-    potential = potential_energy(particles)
-    energy = kinetic + potential
-    energy_list.append(energy)
-    kinetic_list.append(kinetic)
-    potential_list.append(potential)
+    # kinetic = kinetic_energy(particles)
+    # potential = potential_energy(particles)
+    # energy = kinetic + potential
+    # energy_list.append(energy)
+    # kinetic_list.append(kinetic)
+    # potential_list.append(potential)
 
-    # Number of particles on the right side
+    # # Number of particles on the right side
     # n_left = n_particles_left_side(particles)
     # n_left_list.append(n_left)
 
     # Store current velocities
-    # current_velocities = []
-    # for particle in particles:
-    #     current_velocities.append(particle.v)
-    # velocity_list.append(current_velocities)
+    current_velocities = []
+    for particle in particles:
+        current_velocities.append(particle.v)
+    velocity_list.append(current_velocities)
 
     # Update positions
     # force_matrix = Force_matrix(particles)
@@ -298,14 +304,12 @@ def Vacf(velocity_list, max_tau=None):
         max_tau = len(velocity_list) // 2
 
     vacf = np.zeros(max_tau)
-    n_particles = len(velocity_list[0])
-
-    for tau in range(max_tau):
+    for tau in tqdm(range(max_tau), desc="Calculating VACF"):
         correlation = 0
         count = 0
 
         for t in range(len(velocity_list) - tau):
-            for p in range(n_particles):
+            for p in range(N):
                 v0 = velocity_list[t][p]
                 vt = velocity_list[t + tau][p]
                 correlation += np.dot(v0, vt)
@@ -324,19 +328,21 @@ def Equilibration_time(vacf, threshold=1 / np.e):
     return len(vacf)
 
 
-# vacf = Vacf(velocity_list)
-# equilibration_time = Equilibration_time(vacf)
-# plt.figure(figsize=(10, 6))
-# plt.plot(range(len(vacf)), vacf, "b-", label="VACF")
-# plt.axvline(
-#     x=equilibration_time,
-#     color="r",
-#     linestyle="--",
-#     label=f"Equilibration Time: {equilibration_time} steps",
-# )
-# plt.xlabel("Time Step (τ)")
-# plt.ylabel("Velocity Autocorrelation")
-# plt.title("Velocity Autocorrelation Function")
-# plt.legend()
-# plt.grid(True)
-# plt.show()
+if len(velocity_list) > 0:
+    vacf = Vacf(velocity_list)
+    equilibration_time = Equilibration_time(vacf)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(vacf)), vacf, "b-", label="VACF")
+    plt.axvline(
+        x=equilibration_time,
+        color="r",
+        linestyle="--",
+        label=f"Equilibration Time: {equilibration_time} steps",
+    )
+    plt.xlabel("Time Step (τ)")
+    plt.ylabel("Velocity Autocorrelation")
+    plt.title("Velocity Autocorrelation Function")
+    plt.legend()
+    plt.grid(True)
+    plt.show()

@@ -4,10 +4,10 @@ import matplotlib.animation as animation
 
 
 N = 60
-Bm = 0.6
-rho = 0.1
+Bm = 0.625
+rho = 0.01
 p_rand_move = 1
-iters = 150
+iters = 1500
 np.random.seed(42)
 
 grid = np.random.choice([-1, 0, 1], size=(N, N), p=[(1 - rho) / 2, rho, (1 - rho) / 2])
@@ -103,6 +103,6 @@ for spine in ax.spines.values():
 ax.set_title(f"Schelling Model Bm = {Bm}, rho = {rho} - Frame: 0", fontsize=16, pad=20)
 plt.tight_layout()
 ani = animation.FuncAnimation(fig, update, frames=iters, interval=100, blit=False)
-# ani.save("Project/schelling_model2.gif", writer="pillow", fps=10)
+ani.save("Project/full_seperation.gif", writer="pillow", fps=10)
 
 plt.show()

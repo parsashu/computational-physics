@@ -99,21 +99,21 @@ def schelling_model(rho, Bm, p_rand_move=1, max_iters=500):
 
 
 # # n_moves vs Bm
-# rho = 0.1
-# Bms = np.linspace(0.5, 1, 10)
-# n_moves = [
-#     schelling_model(rho=rho, Bm=Bm)
-#     for Bm in tqdm(Bms, desc="Computing moves for different Bm values")
-# ]
+rho = 0.1
+Bms = np.linspace(0.5, 1, 10)
+n_moves = [
+    schelling_model(rho=rho, Bm=Bm)
+    for Bm in tqdm(Bms, desc="Computing moves for different Bm values")
+]
 
-# plt.figure(figsize=(10, 6))
-# plt.plot(Bms, n_moves, "b-", linewidth=2)
-# plt.xlabel("Bm (Similarity Threshold)", fontsize=12)
-# plt.ylabel("Number of Moves", fontsize=12)
-# plt.title(f"Number of Moves vs Similarity Threshold, rho = {rho}", fontsize=14)
-# plt.grid(True, linestyle="--", alpha=0.7)
-# plt.tight_layout()
-# plt.show()
+plt.figure(figsize=(10, 6))
+plt.plot(Bms, n_moves, "b-", linewidth=2)
+plt.xlabel("Bm (Similarity Threshold)", fontsize=12)
+plt.ylabel("Number of Moves", fontsize=12)
+plt.title(f"Number of Moves vs Similarity Threshold, rho = {rho}", fontsize=14)
+plt.grid(True, linestyle="--", alpha=0.7)
+plt.tight_layout()
+plt.show()
 
 
 # n_moves vs rho

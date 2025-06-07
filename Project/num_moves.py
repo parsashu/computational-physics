@@ -29,11 +29,12 @@ def move_agent(grid, new_grid, i, j, p_rand_move):
     """
     Move the agent to the closest empty cell or a random empty cell with probability p_rand_move
     """
+    moved = False
     empty_cells = np.where((grid == 0) & (new_grid == 0))
     empty_cells = list(zip(empty_cells[0], empty_cells[1]))
 
     if not empty_cells:
-        return
+        return moved
 
     # Random move
     if np.random.rand() < p_rand_move:
@@ -58,6 +59,8 @@ def move_agent(grid, new_grid, i, j, p_rand_move):
 
         new_grid[closest_i, closest_j] = grid[i, j]
         new_grid[i, j] = 0
+    moved = True
+    return moved
 
 
 def schelling_model(rho, Bm, p_rand_move=1, max_iters=500):
@@ -81,8 +84,9 @@ def schelling_model(rho, Bm, p_rand_move=1, max_iters=500):
 
         for i, j in positions:
             if grid[i, j] != 0 and not is_satisfied(grid, i, j, Bm):
-                move_agent(grid, new_grid, i, j, p_rand_move)
-                current_n_moves += 1
+                moved = move_agent(grid, new_grid, i, j, p_rand_move)
+                if moved:
+                    current_n_moves += 1
         grid = new_grid
 
         # No agent moved
